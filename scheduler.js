@@ -1,6 +1,6 @@
 module.exports = {
 	getNextWorker : () => {
-		return 'localhost:2333';
+		return 'http://localhost:9000';
 	}, 
 	registerWorker : (host) => {
 
