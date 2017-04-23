@@ -1,0 +1,23 @@
+{
+  "name": "load-balancer",
+  "version": "1.0.0",
+  "description": "A load balancer written in nodejs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fredzqm/loadBalancer.git"
+  },
+  "author": "Fred Zhang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fredzqm/loadBalancer/issues"
+  },
+  "homepage": "https://github.com/fredzqm/loadBalancer#readme",
+  "keywords": [
+    "load",
+    "balancer"
+  ]
+}
