@@ -19,5 +19,9 @@
   "keywords": [
     "load",
     "balancer"
-  ]
+  ],
+  "dependencies": {
+    "http-proxy": "^1.16.2",
+    "url": "^0.11.0"
+  }
 }
