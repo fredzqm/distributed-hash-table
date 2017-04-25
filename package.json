@@ -4,7 +4,10 @@
   "description": "A load balancer written in nodejs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "build": "docker build -t load-balancer .",
+    "docker": "docker run -t load-balancer"
   },
   "repository": {
     "type": "git",
