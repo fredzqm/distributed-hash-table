@@ -18,11 +18,10 @@ public class RequestParser implements IDatagramPacketListener {
 	@Override
 	public void onRecieved(DatagramPacket packet) throws IOException {
 		InetAddress addr = packet.getAddress();
-		byte[] data = packet.getData();
-		int port = packet.getLength();
-		ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(data));
+		ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream( packet.getData()));
 		try {
-			Request message = (Request) inputStream.readObject();
+			Request request = (Request) inputStream.readObject();
+			request.handleRequest(addr);
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}

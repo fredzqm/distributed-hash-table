@@ -1,4 +1,6 @@
+import java.io.Serializable;
+import java.net.InetAddress;
 
-public class Request {
-
+public interface Request extends Serializable {
+	void handleRequest(InetAddress addr);
 }

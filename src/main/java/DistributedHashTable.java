@@ -13,6 +13,10 @@ public class DistributedHashTable {
 		this.map = new HashMap<>();
 	}
 
+	public void joinCluster(String hostNameToJoin) {
+
+	}
+
 	public String get(String fileName) {
 		if (map.containsKey(fileName)) {
 			return map.get(fileName);
@@ -45,9 +49,9 @@ public class DistributedHashTable {
 		return null;
 	}
 
-	public DistributedHashTable getIntance() {
+	public static DistributedHashTable getIntance() {
 		if (table == null) {
-			synchronized (this) {
+			synchronized (DistributedHashTable.class) {
 				if (table == null) {
 					table = new DistributedHashTable();
 				}
@@ -55,4 +59,5 @@ public class DistributedHashTable {
 		}
 		return table;
 	}
+
 }
