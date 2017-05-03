@@ -1,7 +1,9 @@
-FROM openjdk:8
+FROM gradle:3.4
 
-RUN mkdir -p /app
-
+USER root
+COPY . /app
 WORKDIR /app
-VOLUME /app
+
+RUN gradle fatjar
+
 ENTRYPOINT ["java", "-jar", "build/libs/distributed-hash-table-all.jar"]
