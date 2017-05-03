@@ -1,0 +1,7 @@
+version: '3'
+services:
+  main:
+    image: webapp:tag
+    build: .
+    volumes: 
+      - .:/app
