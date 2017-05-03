@@ -1,16 +1,16 @@
-
-
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class DistributedHashTable {
+	private static DistributedHashTable table;
 	private Set<String> addresses;
 	private Map<String, String> map;
 
-	public DistributedHashTable(Set<String> addresses, Map<String, String> map) {
-		super();
-		this.addresses = addresses;
-		this.map = map;
+	private DistributedHashTable() {
+		this.addresses = new HashSet<>();
+		this.map = new HashMap<>();
 	}
 
 	public String get(String fileName) {
@@ -45,4 +45,14 @@ public class DistributedHashTable {
 		return null;
 	}
 
+	public DistributedHashTable getIntance() {
+		if (table == null) {
+			synchronized (this) {
+				if (table == null) {
+					table = new DistributedHashTable();
+				}
+			}
+		}
+		return table;
+	}
 }

@@ -1,44 +1,46 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Server {
-
-	public static final int PORT = 3000;
-	private final static int PACKETSIZE = 100;
-	private List<DatagramPacket> packets;
-
-	public Server() {
-		this.packets = new ArrayList<>();
+	private final int bufferSize;
+	private final List<IDatagramPacketListener> listeners;
+	private final DatagramSocket socket;
+	
+	public Server(int port, int bufferSize) throws SocketException {
+		this.listeners = new ArrayList<>();
+		this.socket = new DatagramSocket(port);
+		this.bufferSize = bufferSize;
 	}
 
+	public void addListener(RequestParser datagramListener) {
+		this.listeners.add(datagramListener);
+	}
+	
 	public void startServer() {
 		new Thread(new Runnable() {
-
 			@Override
 			public void run() {
-				// TODO Auto-generated method stub
-
-				DatagramSocket socket = null;
-				try {
-					socket = new DatagramSocket(PORT);
-
-					for (;;) {
-						DatagramPacket packet = new DatagramPacket(new byte[PACKETSIZE], PACKETSIZE);
+				byte[] buffer = new byte[bufferSize];
+				for (;;) {
+					DatagramPacket packet = new DatagramPacket(buffer, bufferSize);
+					try {
 						socket.receive(packet);
-						packets.add(packet);
+						for (IDatagramPacketListener d : listeners) {
+							d.onRecieved(packet);
+						}
+					} catch (IOException e) {
+						socket.close();
+						throw new RuntimeException(e);
 					}
-
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
-
 			}
 
 		}).start();
 	}
-	
+
+
 }
