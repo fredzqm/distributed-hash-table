@@ -13,6 +13,7 @@ public class RequestParser implements IDatagramPacketListener {
 	public RequestParser() throws SocketException {
 		this.server = new Server(PORT, PACKETSIZE);
 		this.server.addListener(this);
+		this.server.startServer();
 	}
 
 	@Override
