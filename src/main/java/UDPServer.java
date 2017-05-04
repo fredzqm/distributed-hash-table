@@ -13,7 +13,7 @@ import java.util.Arrays;
 
 public class UDPServer implements Runnable {
 	private final static int BUFFERSIZE = 1024;
-
+	
 	private IDatagramPacketListener listener;
 	private Thread thread;
 	private int port;
