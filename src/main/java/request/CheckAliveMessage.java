@@ -1,5 +1,8 @@
+package request;
 import java.io.Serializable;
 import java.net.InetAddress;
+
+import networkUtility.UDPServer;
 
 public class CheckAliveMessage implements Serializable, Request {
 

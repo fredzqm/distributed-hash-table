@@ -1,3 +1,4 @@
+package networkUtility;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -10,6 +11,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
+
+import distributedHashTable.IDatagramPacketListener;
 
 public class UDPServer implements Runnable {
 	private final static int BUFFERSIZE = 1024;
@@ -77,23 +80,24 @@ public class UDPServer implements Runnable {
 		DatagramSocket socket;
 		try {
 			socket = new DatagramSocket(port);
-			socket.setSoTimeout(timeout);
 		} catch (SocketException e) {
 			throw new RuntimeException(e);
 		}
 		DatagramPacket packet = new DatagramPacket(new byte[BUFFERSIZE], BUFFERSIZE);
 		try {
+			socket.setSoTimeout(timeout);
 			socket.receive(packet);
+			socket.setSoTimeout(0);
 		} catch (SocketTimeoutException e) {
 			throw e;
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		} finally {
 			if (socket != null)
 				socket.close();
 		}
 		if (!Arrays.equals(packet.getAddress().getAddress(), address.getAddress())) {
-			throw new RecievePacketFromWrongIPExcpetion();
+			throw new RuntimeException("RecievePacket From WrongIP");
 		}
 		return Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
 	}

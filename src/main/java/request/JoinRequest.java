@@ -1,11 +1,15 @@
+package request;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
-public class JoinRequest implements Request {
+import distributedHashTable.DistributedHashTable;
+import distributedHashTable.RequestParser;
+import networkUtility.UDPServer;
 
-	public static int JOIN_RESPONSE_PORT = 3333;
+public class JoinRequest implements Request {
+	public static int JOIN_RESPONSE_PORT = 3330;
 
 	/**
 	 * 
@@ -36,7 +40,7 @@ public class JoinRequest implements Request {
 	@Override
 	public void handleRequest(InetAddress addr) {
 		System.out.println("Hello world");
-		UDPServer.sendObject(new JoinResponse(), addr, 3333);
+		UDPServer.sendObject(new JoinResponse(), addr, JOIN_RESPONSE_PORT);
 		try {
 			UDPServer.recieveObject(addr, JOIN_RESPONSE_PORT, 10000, JoinACK.class);
 			DistributedHashTable dht = DistributedHashTable.getIntance();

@@ -1,7 +1,10 @@
+package networkUtility;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import distributedHashTable.ITCPConnectionListener;
 
 public class TCPServer implements Runnable {
 	private final ITCPConnectionListener listener;
