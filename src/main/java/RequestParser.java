@@ -1,6 +1,4 @@
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -11,21 +9,15 @@ public class RequestParser implements IDatagramPacketListener {
 	private Server server;
 
 	public RequestParser() throws SocketException {
-		this.server = new Server(PORT, PACKETSIZE);
-		this.server.addListener(this);
-		this.server.startServer();
+		this.server = new Server(PORT, PACKETSIZE, this);
+		this.server.start();
 	}
 
 	@Override
 	public void onRecieved(DatagramPacket packet) throws IOException {
 		InetAddress addr = packet.getAddress();
-		ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream( packet.getData()));
-		try {
-			Request request = (Request) inputStream.readObject();
-			request.handleRequest(addr);
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		}
+		Request request = Server.deSerializeObject(packet.getData(), Request.class);
+		request.handleRequest(addr);
 	}
 
 }

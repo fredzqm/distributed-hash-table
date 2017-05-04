@@ -8,6 +8,7 @@ public class Main {
 		String hostNameToJoin = args[0];
 		// DistributedHashTable dht = DistributedHashTable.getIntance();
 		// dht.joinCluster(hostNameToJoin);
+		System.out.println(hostNameToJoin);
 		RequestParser s = new RequestParser();
 		Server.sendObject(new HelloRequest(), InetAddress.getByName(hostNameToJoin), RequestParser.PORT);
 		while (true)
