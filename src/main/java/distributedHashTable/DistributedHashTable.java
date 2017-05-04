@@ -23,6 +23,7 @@ public class DistributedHashTable {
 	private DistributedHashTable() {
 		this.addresses = new HashSet<>();
 		this.map = new HashMap<>();
+		this.requestParser = new RequestParser();
 	}
 
 	public InetAddress getLeft() {
@@ -42,7 +43,6 @@ public class DistributedHashTable {
 	}
 
 	public void joinCluster(InetAddress entryNode) throws SocketTimeoutException, UnknownHostException {
-		requestParser = new RequestParser();
 		JoinRequest.sendJoinRequest(entryNode);
 	}
 
