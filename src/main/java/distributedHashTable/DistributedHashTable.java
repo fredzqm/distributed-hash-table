@@ -8,9 +8,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import networkUtility.UDPServer;
 import request.CheckAliveMessage;
 import request.JoinRequest;
+import request.Message;
 
 public class DistributedHashTable {
 	private Set<String> addresses;
@@ -43,8 +43,13 @@ public class DistributedHashTable {
 		this.right = right;
 	}
 
+	public void sentMessage(Message message, InetAddress address) {
+		this.requestParser.sendMessage(message, address);
+	}
+
 	public void joinCluster(InetAddress entryNode) throws SocketTimeoutException, UnknownHostException {
-		JoinRequest.sendJoinRequest(entryNode);
+		JoinRequest joinRequest = new JoinRequest();
+		DistributedHashTable.getIntance().sentMessage(joinRequest, entryNode);
 	}
 
 	public String get(String fileName) {
@@ -81,19 +86,26 @@ public class DistributedHashTable {
 
 	public void checkNeighbor() {
 		System.out.println("Checking neigher");
+		CheckAliveMessage forRight = new CheckAliveMessage();
+		CheckAliveMessage forLeft = new CheckAliveMessage();
+		sentMessage(forRight, right);
+		sentMessage(forLeft, left);
+		System.out.println("Checking waiting for response");
 		try {
-			System.out.println("Checking waiting for response");
-			UDPServer.sendObject(new CheckAliveMessage(), right, CommunictionHandler.PORT);
-			UDPServer.recieveBytes(right, CheckAliveMessage.CHECK_ALIVE_ACK_PORT, 1000);
-			UDPServer.sendObject(new CheckAliveMessage(), left, CommunictionHandler.PORT);
-			UDPServer.recieveBytes(left, CheckAliveMessage.CHECK_ALIVE_ACK_PORT, 1000);
-			System.out.println("[INFO]: Both neight are up, left: " + this.left.getHostAddress() + " right: "
-					+ this.right.getHostAddress());
-		} catch (SocketTimeoutException e) {
-			System.err.println("checkNeighbor timed out");
-			checkNeighbor();
-			// throw new RuntimeException(e);
+			forRight.wait();
+			forLeft.wait();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
+		if (forRight.isTimeOut()) {
+			System.err.println("[ERROR] right neighor " + right.getHostAddress() + " is not responding");
+			checkNeighbor();
+		} else if (forLeft.isTimeOut()) {
+			System.err.println("[ERROR] left neighor " + left.getHostAddress() + " is not responding");
+			checkNeighbor();
+		}
+		System.out.println("[INFO]: Both neight are up, left: " + this.left.getHostAddress() + " right: "
+				+ this.right.getHostAddress());
 	}
 
 	@Override
