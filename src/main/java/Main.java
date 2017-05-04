@@ -1,5 +1,6 @@
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 public class Main {
@@ -10,7 +11,16 @@ public class Main {
 		// dht.joinCluster(hostNameToJoin);
 		System.out.println(hostNameToJoin);
 		RequestParser s = new RequestParser();
-		Server.sendObject(new HelloRequest(), InetAddress.getByName(hostNameToJoin), RequestParser.PORT);
+
+		InetAddress addr = InetAddress.getByName(hostNameToJoin);
+		Server.sendObject(new HelloRequest(), addr, RequestParser.PORT);
+
+		try {
+			HelloResponse response = Server.recieveObject(addr, 3333, 1000, HelloResponse.class);
+			System.out.println("getResponse: " + response);
+		} catch (SocketTimeoutException e) {
+			e.printStackTrace();
+		}
 		while (true)
 			;
 	}

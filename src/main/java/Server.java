@@ -8,18 +8,18 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Arrays;
 
 public class Server implements Runnable {
-	private final int bufferSize;
+	private final static int BUFFERSIZE = 1024;
 	private final IDatagramPacketListener listener;
 	private final DatagramSocket socket;
 	private final Thread thread;
 
-	public Server(int port, int bufferSize, IDatagramPacketListener datagramPacketListener) throws SocketException {
+	public Server(int port, IDatagramPacketListener datagramPacketListener) throws SocketException {
 		this.listener = datagramPacketListener;
 		this.socket = new DatagramSocket(port);
-		this.bufferSize = bufferSize;
 		this.thread = new Thread(this);
 	}
 
@@ -29,9 +29,9 @@ public class Server implements Runnable {
 
 	@Override
 	public void run() {
-		byte[] buffer = new byte[bufferSize];
+		byte[] buffer = new byte[BUFFERSIZE];
 		for (;;) {
-			DatagramPacket packet = new DatagramPacket(buffer, bufferSize);
+			DatagramPacket packet = new DatagramPacket(buffer, BUFFERSIZE);
 			try {
 				socket.receive(packet);
 				listener.onRecieved(packet);
@@ -61,7 +61,11 @@ public class Server implements Runnable {
 		}
 	}
 
-	public static byte[] recieveBytes(InetAddress address, int port, int timeout, int bufferSize) {
+	public static <T> T recieveObject(InetAddress address, int port, int timeout, Class<T> clazz) throws SocketTimeoutException {
+		return deSerializeObject(recieveBytes(address, port, timeout), clazz);
+	}
+
+	public static byte[] recieveBytes(InetAddress address, int port, int timeout) throws SocketTimeoutException {
 		DatagramSocket socket;
 		try {
 			socket = new DatagramSocket(port);
@@ -69,11 +73,13 @@ public class Server implements Runnable {
 		} catch (SocketException e) {
 			throw new RuntimeException(e);
 		}
-		DatagramPacket packet = new DatagramPacket(new byte[bufferSize], bufferSize);
+		DatagramPacket packet = new DatagramPacket(new byte[BUFFERSIZE], BUFFERSIZE);
 		try {
 			socket.receive(packet);
+		} catch (SocketTimeoutException e) {
+			throw e;
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			e.printStackTrace();
 		} finally {
 			if (socket != null)
 				socket.close();
