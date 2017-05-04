@@ -2,20 +2,17 @@ package request;
 
 import java.net.InetAddress;
 
-public class ACKMessage extends Message {
+public abstract class AbstractACKMessage extends Message {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public ACKMessage(int ackForID) {
+	public AbstractACKMessage(int ackForID) {
 		super(ackForID);
 	}
 
-	@Override
-	public void handleRequest(InetAddress addr) {
-		// since it is just for ACK, do nothing here;
-	}
+	public abstract void handleRequest(InetAddress addr);
 
 	@Override
 	public long getTimeOut() {

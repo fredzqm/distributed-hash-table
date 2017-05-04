@@ -83,6 +83,7 @@ public class JoinRequest extends Message {
 				dht.setRight(entryNode);
 			dht.setLeft(entryNode);
 			dht.checkNeighbor();
+			dht.sentMessage(new JoinACK(getRequestID()), entryNode);
 		}
 
 		@Override
@@ -94,6 +95,26 @@ public class JoinRequest extends Message {
 		public void timeOut(InetAddress address) {
 			System.err.println("[ERROR] JoinResponse timed out");
 			DistributedHashTable.getIntance().sentMessage(this, address);
+		}
+
+		public class JoinACK extends AbstractACKMessage {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			public JoinACK(int requestID) {
+				super(requestID);
+			}
+
+			@Override
+			public void handleRequest(InetAddress address) {
+				DistributedHashTable dht = DistributedHashTable.getIntance();
+				dht.setRight(address);
+				if (dht.getLeft() == null) // there is only two nodes
+					dht.setLeft(address);
+				DistributedHashTable.getIntance().checkNeighbor();
+			}
 		}
 
 	}

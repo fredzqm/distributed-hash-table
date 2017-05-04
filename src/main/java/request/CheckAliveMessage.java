@@ -31,7 +31,7 @@ public class CheckAliveMessage extends Message {
 
 	@Override
 	public void handleRequest(InetAddress address) {
-		DistributedHashTable.getIntance().sentMessage(new ACKMessage(this.getRequestID()), address);
+		DistributedHashTable.getIntance().sentMessage(new SimpleACKMessage(this.getRequestID()), address);
 	}
 
 	@Override
@@ -41,13 +41,13 @@ public class CheckAliveMessage extends Message {
 
 	@Override
 	public void timeOut(InetAddress address) {
-		System.err.println("[ERROR]: " + nameOfHostChecked + " is not responding -- " + times);
+		System.err.println("[ERROR] " + nameOfHostChecked + " is not responding -- " + times);
 		times++;
 		DistributedHashTable.getIntance().sentMessage(this, address);
 	}
 
 	@Override
 	public void acknowledge() {
-		System.out.println("[INFO]: " + nameOfHostChecked + " is up running");
+		System.out.println("[INFO] " + nameOfHostChecked + " is up running");
 	}
 }
