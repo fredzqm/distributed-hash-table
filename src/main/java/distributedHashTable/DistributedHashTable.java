@@ -1,6 +1,7 @@
 package distributedHashTable;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class DistributedHashTable {
 		this.right = right;
 	}
 
-	public void joinCluster(InetAddress entryNode) {
+	public void joinCluster(InetAddress entryNode) throws SocketTimeoutException, UnknownHostException {
 		requestParser = new RequestParser();
 		JoinRequest.sendJoinRequest(entryNode);
 	}
@@ -78,15 +79,19 @@ public class DistributedHashTable {
 	}
 
 	public void checkNeighbor() {
+		System.out.println("Checking neigher");
 		UDPServer.sendObject(new CheckAliveMessage(), right, RequestParser.PORT);
 		UDPServer.sendObject(new CheckAliveMessage(), left, RequestParser.PORT);
 		try {
-			UDPServer.recieveBytes(right, CheckAliveMessage.CHECK_ALIVE_ACK_PORT, 100);
-			UDPServer.recieveBytes(left, CheckAliveMessage.CHECK_ALIVE_ACK_PORT, 100);
+			System.out.println("Checking waiting for response");
+			UDPServer.recieveBytes(right, CheckAliveMessage.CHECK_ALIVE_ACK_PORT, 1000);
+			UDPServer.recieveBytes(left, CheckAliveMessage.CHECK_ALIVE_ACK_PORT, 1000);
 			System.out.println("[INFO]: Both neight are up, left: " + this.left.getHostAddress() + " right: "
 					+ this.right.getHostAddress());
 		} catch (SocketTimeoutException e) {
-			throw new RuntimeException(e);
+			System.err.println("checkNeighbor timed out");
+			checkNeighbor();
+//			throw new RuntimeException(e);
 		}
 	}
 
