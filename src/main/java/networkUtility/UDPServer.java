@@ -1,4 +1,5 @@
 package networkUtility;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -16,7 +17,7 @@ import distributedHashTable.IDatagramPacketListener;
 
 public class UDPServer implements Runnable {
 	private final static int BUFFERSIZE = 1024;
-	
+
 	private IDatagramPacketListener listener;
 	private Thread thread;
 	private int port;
@@ -44,7 +45,9 @@ public class UDPServer implements Runnable {
 			DatagramPacket packet = new DatagramPacket(buffer, BUFFERSIZE);
 			try {
 				socket.receive(packet);
-				listener.onRecieved(packet);
+				new Thread(() -> {
+					listener.onRecieved(packet);
+				}).start();
 			} catch (IOException e) {
 				if (socket != null)
 					socket.close();

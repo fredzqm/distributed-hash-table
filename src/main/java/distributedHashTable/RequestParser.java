@@ -17,7 +17,7 @@ public class RequestParser implements IDatagramPacketListener {
 	}
 
 	@Override
-	public void onRecieved(DatagramPacket packet) throws IOException {
+	public void onRecieved(DatagramPacket packet)  {
 		InetAddress addr = packet.getAddress();
 		Request request = UDPServer.deSerializeObject(packet.getData(), Request.class);
 		if (VERBOSE)
