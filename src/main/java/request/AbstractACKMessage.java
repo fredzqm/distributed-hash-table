@@ -16,7 +16,7 @@ public abstract class AbstractACKMessage extends Message {
 
 	@Override
 	public long getTimeOut() {
-		return 0; // no need for timeout
+		throw new RuntimeException("ACKMessage should not be set for timeout");
 	}
 
 	@Override

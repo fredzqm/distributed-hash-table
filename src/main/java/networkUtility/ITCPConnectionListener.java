@@ -1,4 +1,4 @@
-package distributedHashTable;
+package networkUtility;
 import java.net.Socket;
 
 /**

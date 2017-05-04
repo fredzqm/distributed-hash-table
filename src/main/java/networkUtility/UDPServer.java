@@ -13,8 +13,6 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
 
-import distributedHashTable.IDatagramPacketListener;
-
 public class UDPServer implements Runnable {
 	private final static int BUFFERSIZE = 1024;
 

@@ -85,7 +85,8 @@ public class DistributedHashTable {
 	}
 
 	public synchronized void checkNeighbor() {
-		System.out.println("Checking neigher");
+		if (Settings.VERBOSE)
+			System.out.println("Checking Neighbors");
 		if (right == null)
 			throw new RuntimeException("[ERROR] right is null");
 		CheckAliveMessage forRight = new CheckAliveMessage("Right");
