@@ -9,18 +9,12 @@ import java.net.InetAddress;
  *
  */
 public abstract class Message implements Serializable {
-	private int requstID;
-	private int ackForID;
+	protected int requstID;
+	protected int ackForID;
 
 	/**
-	 * This message is the start of a conversation, no need to ACK any one
-	 */
-	public Message() {
-		this.ackForID = 0;
-	}
-
-	/**
-	 * this message is also ack for another message
+	 * this message is also ACK for another message if askForID is {@Code 0},
+	 * then it means that this message does not acknowledge anyone
 	 * 
 	 * @param ackForID
 	 */
@@ -55,8 +49,17 @@ public abstract class Message implements Serializable {
 	}
 
 	/**
+	 * Unless this is a pure ACK message, by default it requires a response
 	 * 
-	 * @param address 
+	 * @return
+	 */
+	public boolean requireACK() {
+		return true;
+	}
+
+	/**
+	 * 
+	 * @param address
 	 */
 	public abstract void handleRequest(InetAddress address);
 
@@ -74,13 +77,7 @@ public abstract class Message implements Serializable {
 	 */
 	public abstract void timeOut(InetAddress address);
 
-	/**
-	 * Unless this is a pure ACK message, by default it requires a response
-	 * 
-	 * @return
-	 */
-	public boolean requireACK() {
-		return true;
+	public void acknowledge() {
+		// hook
 	}
-
 }

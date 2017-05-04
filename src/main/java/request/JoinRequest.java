@@ -1,37 +1,35 @@
 package request;
 
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import javax.accessibility.AccessibleKeyBinding;
-
 import distributedHashTable.DistributedHashTable;
-import networkUtility.UDPServer;
 
-public class JoinRequest extends AbstractRequest {
-	public static int JOIN_RESPONSE_PORT = 3330;
-
+/**
+ * The request to join a cluster
+ * 
+ * @author fredzqm
+ *
+ */
+public class JoinRequest extends Message {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * creates a Join Request. Since it initialize a request, it does not
+	 * acknowledge any previous message
+	 */
+	public JoinRequest() {
+		super(0);
+	}
+
+	public static int JOIN_RESPONSE_PORT = 3330;
+
 	@Override
-	public void handleRequest(InetAddress addr) {
-		DistributedHashTable.getIntance().sentMessage(new JoinResponse(), addr);
-		// try {
-		// UDPServer.recieveObject(addr, JOIN_RESPONSE_PORT, 10000,
-		// JoinACK.class);
-		// DistributedHashTable dht = DistributedHashTable.getIntance();
-		// dht.setRight(addr);
-		// if (dht.getLeft() == null)
-		// dht.setLeft(addr);
-		// dht.checkNeighbor();
-		// } catch (SocketTimeoutException e) {
-		// System.err.println("[ERROR] waiting for Joint request timed out");
-		// handleRequest(addr);
-		// }
+	public void handleRequest(InetAddress address) {
+		DistributedHashTable.getIntance().sentMessage(new JoinResponse(getRequestID()), address);
 	}
 
 	@Override
@@ -42,11 +40,16 @@ public class JoinRequest extends AbstractRequest {
 	@Override
 	public void timeOut(InetAddress address) {
 		System.err.println("[ERROR] JoinRequest waiting for join response timed out, resending join request");
-		DistributedHashTable.getIntance().sentMessage(new JoinResponse(), address);
+		DistributedHashTable.getIntance().sentMessage(new JoinResponse(getRequestID()), address);
 	}
 
-	public static class JoinResponse extends AbstractRequest {
-
+	/**
+	 * The response to {@link JoinRequest}
+	 * 
+	 * @author fredzqm
+	 *
+	 */
+	public static class JoinResponse extends Message {
 		/**
 		 * 
 		 */
@@ -54,7 +57,14 @@ public class JoinRequest extends AbstractRequest {
 
 		private String yourRightIP;
 
-		public JoinResponse() {
+		/**
+		 * constructs an JoinRequest givens the requestID of corresponding join
+		 * request
+		 * 
+		 * @param joinRequestID
+		 */
+		public JoinResponse(int joinRequestID) {
+			super(joinRequestID);
 			DistributedHashTable dh = DistributedHashTable.getIntance();
 			if (dh.getRight() != null)
 				yourRightIP = dh.getRight().getHostAddress();
@@ -62,20 +72,17 @@ public class JoinRequest extends AbstractRequest {
 
 		@Override
 		public void handleRequest(InetAddress entryNode) {
-			new Thread(() -> {
-				DistributedHashTable dht = DistributedHashTable.getIntance();
-				if (this.yourRightIP != null)
-					try {
-						dht.setRight(InetAddress.getByName(this.yourRightIP));
-					} catch (UnknownHostException e) {
-						throw new RuntimeException(e);
-					}
-				else
-					dht.setRight(entryNode);
-				dht.setLeft(entryNode);
-				dht.checkNeighbor();
-				DistributedHashTable.getIntance().sentMessage(new JoinACK(), entryNode);
-			}).start();
+			DistributedHashTable dht = DistributedHashTable.getIntance();
+			if (this.yourRightIP != null)
+				try {
+					dht.setRight(InetAddress.getByName(this.yourRightIP));
+				} catch (UnknownHostException e) {
+					throw new RuntimeException(e);
+				}
+			else
+				dht.setRight(entryNode);
+			dht.setLeft(entryNode);
+			dht.checkNeighbor();
 		}
 
 		@Override
@@ -87,25 +94,6 @@ public class JoinRequest extends AbstractRequest {
 		public void timeOut(InetAddress address) {
 			System.err.println("[ERROR] JoinResponse timed out");
 			DistributedHashTable.getIntance().sentMessage(this, address);
-		}
-
-	}
-
-	public static class JoinACK implements AbstractACK {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void handleRequest(InetAddress addr) {
-
-		}
-
-		@Override
-		public int getRequestID() {
-			return 0;
 		}
 
 	}

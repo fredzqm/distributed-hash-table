@@ -84,28 +84,12 @@ public class DistributedHashTable {
 		return table;
 	}
 
-	public void checkNeighbor() {
+	public synchronized void checkNeighbor() {
 		System.out.println("Checking neigher");
-		CheckAliveMessage forRight = new CheckAliveMessage();
-		CheckAliveMessage forLeft = new CheckAliveMessage();
+		CheckAliveMessage forRight = new CheckAliveMessage("Right");
 		sentMessage(forRight, right);
+		CheckAliveMessage forLeft = new CheckAliveMessage("Left");
 		sentMessage(forLeft, left);
-		System.out.println("Checking waiting for response");
-		try {
-			forRight.wait();
-			forLeft.wait();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		if (forRight.isTimeOut()) {
-			System.err.println("[ERROR] right neighor " + right.getHostAddress() + " is not responding");
-			checkNeighbor();
-		} else if (forLeft.isTimeOut()) {
-			System.err.println("[ERROR] left neighor " + left.getHostAddress() + " is not responding");
-			checkNeighbor();
-		}
-		System.out.println("[INFO]: Both neight are up, left: " + this.left.getHostAddress() + " right: "
-				+ this.right.getHostAddress());
 	}
 
 	@Override

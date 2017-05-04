@@ -4,75 +4,50 @@ import java.net.InetAddress;
 
 import distributedHashTable.DistributedHashTable;
 
+/**
+ * The message to check if the a certain node is alive
+ * 
+ * @author fredzqm
+ *
+ */
 public class CheckAliveMessage extends Message {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	public static final int CHECK_ALIVE_ACK_PORT = 3332;
-	private transient boolean timeOuted;
-
-	public CheckAliveMessage() {
-		timeOuted = false;
+	
+	private transient String nameOfHostChecked;
+	private transient int times;
+	
+	/**
+	 * creates a checkAliveMessage
+	 */
+	public CheckAliveMessage(String nameOfHostChecked) {
+		super(0);
+		this.nameOfHostChecked = nameOfHostChecked;
+		this.times = 0;
 	}
 
 	@Override
-	public void handleRequest(InetAddress addr) {
-		DistributedHashTable.getIntance().sentMessage(new AliveACK(this.getRequestID()), addr);
+	public void handleRequest(InetAddress address) {
+		DistributedHashTable.getIntance().sentMessage(new ACKMessage(this.getRequestID()), address);
 	}
 
 	@Override
 	public long getTimeOut() {
-		return 1000;
+		return 100;
 	}
 
 	@Override
 	public void timeOut(InetAddress address) {
-		timeOuted = true;
-	}
-	
-	public boolean isTimeOut() {
-		return timeOuted;
-	}
-
-	public class AliveACK extends Message {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-
-		public AliveACK(int ackForID) {
-			super(ackForID);
-		}
-
-		@Override
-		public void handleRequest(InetAddress addr) {
-			// do nothing
-		}
-
-		@Override
-		public long getTimeOut() {
-			return 0;
-		}
-
-		@Override
-		public void timeOut(InetAddress address) {
-			
-		}
-
-		@Override
-		public boolean requireACK() {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
+		System.err.println("[ERROR]: " + nameOfHostChecked + " is not responding -- " + times);
+		times++;
+		DistributedHashTable.getIntance().sentMessage(this, address);
 	}
 
 	@Override
-	public boolean requireACK() {
-		// TODO Auto-generated method stub
-		return false;
+	public void acknowledge() {
+		System.out.println("[INFO]: " + nameOfHostChecked + " is up running");
 	}
-
 }

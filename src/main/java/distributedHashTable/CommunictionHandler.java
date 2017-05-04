@@ -46,12 +46,13 @@ public class CommunictionHandler implements IDatagramPacketListener {
 					Thread.sleep(request.getTimeOut());
 					if (ackWaiting.contains(ackWaiting)) {
 						request.timeOut(address);
+					} else {
+						request.acknowledge();
 					}
 				} catch (InterruptedException e) {
 					System.err.println("Waiting for " + request + " is interrrupted, trigger timout");
 					request.timeOut(address);
 				}
-				request.notify();
 			})).start();
 		}
 		if (Settings.VERBOSE)
