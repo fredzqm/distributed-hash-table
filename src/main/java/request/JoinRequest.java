@@ -5,11 +5,11 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
+import distributedHashTable.CommunictionHandler;
 import distributedHashTable.DistributedHashTable;
-import distributedHashTable.RequestParser;
 import networkUtility.UDPServer;
 
-public class JoinRequest implements Request {
+public class JoinRequest implements Message {
 	public static int JOIN_RESPONSE_PORT = 3330;
 
 	/**
@@ -19,7 +19,7 @@ public class JoinRequest implements Request {
 
 	public static void sendJoinRequest(InetAddress entryNode) throws SocketTimeoutException, UnknownHostException {
 		JoinRequest joinRequest = new JoinRequest();
-		UDPServer.sendObject(joinRequest, entryNode, RequestParser.PORT);
+		UDPServer.sendObject(joinRequest, entryNode, CommunictionHandler.PORT);
 		JoinResponse response = UDPServer.recieveObject(entryNode, JOIN_RESPONSE_PORT, 10000, JoinResponse.class);
 		DistributedHashTable dht = DistributedHashTable.getIntance();
 		if (response.yourRightIP != null)
@@ -73,4 +73,5 @@ public class JoinRequest implements Request {
 		private static final long serialVersionUID = 1L;
 
 	}
+
 }

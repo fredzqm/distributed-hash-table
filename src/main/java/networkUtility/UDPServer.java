@@ -45,9 +45,7 @@ public class UDPServer implements Runnable {
 			DatagramPacket packet = new DatagramPacket(buffer, BUFFERSIZE);
 			try {
 				socket.receive(packet);
-				new Thread(() -> {
-					listener.onRecieved(packet);
-				}).start();
+				listener.onRecieved(packet);
 			} catch (IOException e) {
 				if (socket != null)
 					socket.close();

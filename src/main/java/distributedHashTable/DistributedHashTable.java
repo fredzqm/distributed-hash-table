@@ -16,7 +16,7 @@ public class DistributedHashTable {
 	private Set<String> addresses;
 	private Map<String, String> map;
 
-	private RequestParser requestParser;
+	private CommunictionHandler requestParser;
 
 	private InetAddress left;
 	private InetAddress right;
@@ -24,7 +24,7 @@ public class DistributedHashTable {
 	private DistributedHashTable() {
 		this.addresses = new HashSet<>();
 		this.map = new HashMap<>();
-		this.requestParser = new RequestParser();
+		this.requestParser = new CommunictionHandler();
 	}
 
 	public InetAddress getLeft() {
@@ -83,9 +83,9 @@ public class DistributedHashTable {
 		System.out.println("Checking neigher");
 		try {
 			System.out.println("Checking waiting for response");
-			UDPServer.sendObject(new CheckAliveMessage(), right, RequestParser.PORT);
+			UDPServer.sendObject(new CheckAliveMessage(), right, CommunictionHandler.PORT);
 			UDPServer.recieveBytes(right, CheckAliveMessage.CHECK_ALIVE_ACK_PORT, 1000);
-			UDPServer.sendObject(new CheckAliveMessage(), left, RequestParser.PORT);
+			UDPServer.sendObject(new CheckAliveMessage(), left, CommunictionHandler.PORT);
 			UDPServer.recieveBytes(left, CheckAliveMessage.CHECK_ALIVE_ACK_PORT, 1000);
 			System.out.println("[INFO]: Both neight are up, left: " + this.left.getHostAddress() + " right: "
 					+ this.right.getHostAddress());

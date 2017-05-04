@@ -4,7 +4,7 @@ import java.net.InetAddress;
 
 import networkUtility.UDPServer;
 
-public class CheckAliveMessage implements Serializable, Request {
+public class CheckAliveMessage implements Serializable, Message {
 
 	/**
 	 * 
