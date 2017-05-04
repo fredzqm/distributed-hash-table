@@ -11,7 +11,7 @@ public class HelloRequest implements Request {
 	@Override
 	public void handleRequest(InetAddress addr) {
 		System.out.println("Hello world");
-		Server.sendObject(new HelloResponse(), addr, 3333);
+		UDPServer.sendObject(new HelloResponse(), addr, 3333);
 	}
 
 }

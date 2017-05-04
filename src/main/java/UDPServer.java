@@ -11,24 +11,31 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
 
-public class Server implements Runnable {
+public class UDPServer implements Runnable {
 	private final static int BUFFERSIZE = 1024;
-	private final IDatagramPacketListener listener;
-	private final DatagramSocket socket;
-	private final Thread thread;
 
-	public Server(int port, IDatagramPacketListener datagramPacketListener) throws SocketException {
+	private IDatagramPacketListener listener;
+	private Thread thread;
+	private int port;
+	private DatagramSocket socket;
+
+	public UDPServer(int port, IDatagramPacketListener datagramPacketListener) {
 		this.listener = datagramPacketListener;
-		this.socket = new DatagramSocket(port);
-		this.thread = new Thread(this);
+		this.port = port;
 	}
 
 	public void start() {
+		this.thread = new Thread(this);
 		this.thread.start();
 	}
 
 	@Override
 	public void run() {
+		try {
+			this.socket = new DatagramSocket(port);
+		} catch (SocketException e) {
+			throw new RuntimeException(e);
+		}
 		byte[] buffer = new byte[BUFFERSIZE];
 		for (;;) {
 			DatagramPacket packet = new DatagramPacket(buffer, BUFFERSIZE);
@@ -61,7 +68,8 @@ public class Server implements Runnable {
 		}
 	}
 
-	public static <T> T recieveObject(InetAddress address, int port, int timeout, Class<T> clazz) throws SocketTimeoutException {
+	public static <T> T recieveObject(InetAddress address, int port, int timeout, Class<T> clazz)
+			throws SocketTimeoutException {
 		return deSerializeObject(recieveBytes(address, port, timeout), clazz);
 	}
 

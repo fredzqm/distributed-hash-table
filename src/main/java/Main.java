@@ -13,10 +13,10 @@ public class Main {
 		RequestParser s = new RequestParser();
 
 		InetAddress addr = InetAddress.getByName(hostNameToJoin);
-		Server.sendObject(new HelloRequest(), addr, RequestParser.PORT);
+		UDPServer.sendObject(new HelloRequest(), addr, RequestParser.PORT);
 
 		try {
-			HelloResponse response = Server.recieveObject(addr, 3333, 1000, HelloResponse.class);
+			HelloResponse response = UDPServer.recieveObject(addr, 3333, 1000, HelloResponse.class);
 			System.out.println("getResponse: " + response);
 		} catch (SocketTimeoutException e) {
 			e.printStackTrace();
