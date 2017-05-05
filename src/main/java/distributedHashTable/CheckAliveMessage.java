@@ -2,8 +2,8 @@ package distributedHashTable;
 
 import java.net.InetAddress;
 
+import request.AbstractACKMessage;
 import request.Message;
-import request.SimpleACKMessage;
 
 /**
  * The message to check if the a certain node is alive
@@ -12,15 +12,14 @@ import request.SimpleACKMessage;
  *
  */
 public class CheckAliveMessage extends Message {
-
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	private transient String nameOfHostChecked;
 	private transient int times;
-	
+
 	/**
 	 * creates a checkAliveMessage
 	 */
@@ -31,8 +30,8 @@ public class CheckAliveMessage extends Message {
 	}
 
 	@Override
-	public void handleRequest(InetAddress address) {
-		DistributedHashTable.getIntance().sentMessage(new SimpleACKMessage(this.getRequestID()), address);
+	public void handleRequest(InetAddress address, Message acknowleged) {
+		DistributedHashTable.getIntance().sentMessage(new CheckAliveACK(this.getRequestID()), address);
 	}
 
 	@Override
@@ -46,9 +45,23 @@ public class CheckAliveMessage extends Message {
 		times++;
 		DistributedHashTable.getIntance().sentMessage(this, address);
 	}
+	
+	public class CheckAliveACK extends AbstractACKMessage {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 
-	@Override
-	public void acknowledge() {
-		System.out.println("[INFO] " + nameOfHostChecked + " is up running");
+		public CheckAliveACK(int ackForID) {
+			super(ackForID);
+		}
+
+		@Override
+		public void handleRequest(InetAddress address, Message acknowleged) {
+			CheckAliveMessage checkAliveMessage = (CheckAliveMessage) acknowleged;
+			System.out.println("[INFO] " + checkAliveMessage.nameOfHostChecked + " is up running");
+		}
+
 	}
+
 }

@@ -2,10 +2,11 @@ package request;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.util.HashSet;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import distributedHashTable.Settings;
 import networkUtility.IDatagramPacketListener;
@@ -24,9 +25,8 @@ import networkUtility.UDPServer;
 public class CommunictionHandler implements IDatagramPacketListener, Runnable {
 	private final int port;
 	private UDPServer server;
-	private Set<Integer> ackWaiting;
+	private Map<Integer, Message> ackWaiting;
 	private Random random;
-	private Thread timeOutCheckThread;
 	private PriorityQueue<UnACKeDMessage> unACKedMessages;
 
 	/**
@@ -36,27 +36,28 @@ public class CommunictionHandler implements IDatagramPacketListener, Runnable {
 	 */
 	public CommunictionHandler(int port) {
 		this.port = port;
-		this.ackWaiting = new HashSet<>();
+		this.ackWaiting = new ConcurrentHashMap<>();
 		this.unACKedMessages = new PriorityQueue<>();
 		this.random = new Random();
 		this.server = new UDPServer(port, this);
 		this.server.start();
-		this.timeOutCheckThread = new Thread(this);
-		this.timeOutCheckThread.start();
+		new Thread(this).start();
 	}
-	
+
 	@Override
 	public void onRecieved(DatagramPacket packet) {
 		InetAddress addr = packet.getAddress();
 		Message request = UDPServer.deSerializeObject(packet.getData(), Message.class);
 		if (Settings.isVerbose())
 			System.out.println("[INFO] recieving message" + request);
+		Message acknowledged = null;
 		if (request.getACKID() != 0) {
-			if (!ackWaiting.remove(request.getACKID()))
+			acknowledged = ackWaiting.remove(request.getACKID());
+			if (acknowledged == null)
 				System.out.println("[ERROR] recieved ack for request " + request.getACKID()
 						+ " but is not in the ackWaiting pool");
 		}
-		request.handleRequest(addr);
+		request.handleRequest(addr, acknowledged);
 	}
 
 	/**
@@ -75,32 +76,22 @@ public class CommunictionHandler implements IDatagramPacketListener, Runnable {
 	 */
 	public void sendMessage(Message message, InetAddress address) {
 		if (message.requireACK()) {
-			int requestID = generateUniqueRequestID();
-			message.setRequestID(requestID);
-			addToUnackedMessageQueue(new UnACKeDMessage(message, address));
+			addToACKQueue(message, address);
 		}
 		if (Settings.isVerbose())
 			System.out.println("[INFO] send message" + message);
 		UDPServer.sendObject(message, address, port);
 	}
 
-	private synchronized int generateUniqueRequestID() {
-		while (true) {
-			int requestID = random.nextInt();
-			if (!ackWaiting.contains(requestID) && requestID != 0) {
-				ackWaiting.add(requestID);
-				return requestID;
-			}
+	private synchronized void addToACKQueue(Message message, InetAddress address) {
+		int requestID = 0;
+		while (requestID == 0 || ackWaiting.containsKey(requestID)) {
+			requestID = random.nextInt();
 		}
-	}
-
-	private synchronized void addToUnackedMessageQueue(UnACKeDMessage unACKedMessage) {
-		boolean wakeUpTimeOutThread = this.unACKedMessages.isEmpty()
-				|| unACKedMessage.getTime() < this.unACKedMessages.peek().getTime();
-		this.unACKedMessages.add(unACKedMessage);
-		if (wakeUpTimeOutThread) {
-			this.notifyAll();
-		}
+		message.setRequestID(requestID);
+		this.ackWaiting.put(requestID, message);
+		this.unACKedMessages.add(new UnACKeDMessage(message, address));
+		this.notifyAll();
 	}
 
 	@Override
@@ -123,7 +114,7 @@ public class CommunictionHandler implements IDatagramPacketListener, Runnable {
 			}
 			while (!this.unACKedMessages.isEmpty()) {
 				UnACKeDMessage next = this.unACKedMessages.peek();
-				if (!next.checkTimeOut(this.ackWaiting))
+				if (!next.checkTimeOut(this.ackWaiting.keySet()))
 					break;
 				this.unACKedMessages.poll();
 			}
@@ -151,8 +142,6 @@ public class CommunictionHandler implements IDatagramPacketListener, Runnable {
 			if (this.time < System.currentTimeMillis()) {
 				if (ackWaiting.contains(this.message.getRequestID())) {
 					this.message.timeOut(address);
-				} else {
-					this.message.acknowledge();
 				}
 				return true;
 			}

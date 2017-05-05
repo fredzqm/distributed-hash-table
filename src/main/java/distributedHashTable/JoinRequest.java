@@ -29,7 +29,7 @@ public class JoinRequest extends Message {
 	public static int JOIN_RESPONSE_PORT = 3330;
 
 	@Override
-	public void handleRequest(InetAddress address) {
+	public void handleRequest(InetAddress address, Message acknowleged) {
 		DistributedHashTable.getIntance().sentMessage(new JoinResponse(getRequestID()), address);
 	}
 
@@ -72,7 +72,7 @@ public class JoinRequest extends Message {
 		}
 
 		@Override
-		public void handleRequest(InetAddress entryNode) {
+		public void handleRequest(InetAddress entryNode, Message acknowleged) {
 			DistributedHashTable dht = DistributedHashTable.getIntance();
 			if (this.yourRightIP != null)
 				try {
@@ -109,7 +109,7 @@ public class JoinRequest extends Message {
 			}
 
 			@Override
-			public void handleRequest(InetAddress address) {
+			public void handleRequest(InetAddress address, Message acknowleged) {
 				DistributedHashTable dht = DistributedHashTable.getIntance();
 				dht.setRight(address);
 				if (dht.getLeft() == null) // there is only two nodes

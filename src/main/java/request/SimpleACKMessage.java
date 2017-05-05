@@ -20,7 +20,7 @@ public class SimpleACKMessage extends AbstractACKMessage {
 	}
 
 	@Override
-	public void handleRequest(InetAddress addr) {
+	public void handleRequest(InetAddress addr, Message acknowleged) {
 		// does nothiing
 	}
 

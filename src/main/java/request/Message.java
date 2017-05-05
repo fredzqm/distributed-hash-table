@@ -63,8 +63,9 @@ public abstract class Message implements Serializable {
 	 * 
 	 * @param address
 	 *            the address this message is from
+	 * @param acknowleged 
 	 */
-	public abstract void handleRequest(InetAddress address);
+	public abstract void handleRequest(InetAddress address, Message acknowleged);
 
 	/**
 	 * the time interval to wait until it times out
@@ -81,11 +82,4 @@ public abstract class Message implements Serializable {
 	 *            the address this message were supposed to be sent to
 	 */
 	public abstract void timeOut(InetAddress address);
-
-	/**
-	 * a hook method to be called when this method is acknolwedged
-	 */
-	public void acknowledge() {
-		// hook
-	}
 }
