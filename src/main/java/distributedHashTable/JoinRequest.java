@@ -32,9 +32,12 @@ public class JoinRequest extends Message {
 		// TODO: in the future actually figure out a proper position to
 		// insert it. Right now just insert at the right side
 		NodeInfo nodeInfoFrom = new NodeInfo(address, "sha");
-		if (dht.getRight() != null) {
+		NodeInfo right = dht.getRight();
+		if (right != null) {
 			// there is already more than two nodes in the cluster, ask the
 			// right to update its left
+			String sha = right.getSha();
+			
 			dht.sentMessage(new UpdateLeftRequest(address.getHostAddress()), dht.getRight().getAddress());
 			dht.sentMessage(new JoinResponse(getRequestID(), null, dht.getRight().getHostAddress()), address);
 			dht.setRight(nodeInfoFrom);
