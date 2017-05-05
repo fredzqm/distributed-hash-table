@@ -4,18 +4,15 @@ import java.io.Serializable;
 import java.net.InetAddress;
 
 /**
+ * The messge {@link CommunictionHandler} will pass around
  * 
  * @author fredzqm
  *
  */
+@SuppressWarnings("serial")
 public abstract class Message implements Serializable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	
-	protected int requstID;
-	protected int ackForID;
+	private int requstID;
+	private int ackForID;
 
 	/**
 	 * this message is also ACK for another message if askForID is {@Code 0},
@@ -65,6 +62,7 @@ public abstract class Message implements Serializable {
 	/**
 	 * 
 	 * @param address
+	 *            the address this message is from
 	 */
 	public abstract void handleRequest(InetAddress address);
 
@@ -76,12 +74,17 @@ public abstract class Message implements Serializable {
 	public abstract long getTimeOut();
 
 	/**
-	 * what happens if no message acknowledged this one
+	 * When no message acknowledged this one, after
+	 * {@link Message#getTimeOut()}, this method will be called
 	 * 
 	 * @param address
+	 *            the address this message were supposed to be sent to
 	 */
 	public abstract void timeOut(InetAddress address);
 
+	/**
+	 * a hook method to be called when this method is acknolwedged
+	 */
 	public void acknowledge() {
 		// hook
 	}

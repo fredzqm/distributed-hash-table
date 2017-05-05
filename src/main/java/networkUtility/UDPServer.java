@@ -10,9 +10,13 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.util.Arrays;
 
+/**
+ * The UDP Server that emits UDP packets to {@link IDatagramPacketListener}
+ * 
+ * @author fredzqm
+ *
+ */
 public class UDPServer implements Runnable {
 	private final static int BUFFERSIZE = 1024;
 
@@ -21,11 +25,22 @@ public class UDPServer implements Runnable {
 	private int port;
 	private DatagramSocket socket;
 
+	/**
+	 * 
+	 * @param port
+	 *            the port this UDPServer would listen at
+	 * @param datagramPacketListener
+	 *            the listener who will consume the UDP datagrams
+	 */
+
 	public UDPServer(int port, IDatagramPacketListener datagramPacketListener) {
 		this.listener = datagramPacketListener;
 		this.port = port;
 	}
 
+	/**
+	 * start the server
+	 */
 	public void start() {
 		this.thread = new Thread(this);
 		this.thread.start();
@@ -39,7 +54,7 @@ public class UDPServer implements Runnable {
 			throw new RuntimeException(e);
 		}
 		byte[] buffer = new byte[BUFFERSIZE];
-		for (;;) {
+		while (true) {
 			DatagramPacket packet = new DatagramPacket(buffer, BUFFERSIZE);
 			try {
 				socket.receive(packet);
@@ -52,10 +67,24 @@ public class UDPServer implements Runnable {
 		}
 	}
 
+	/**
+	 * Send a UDP object to certain host at a port
+	 * 
+	 * @param object
+	 * @param host
+	 * @param port
+	 */
 	public static void sendObject(Serializable object, InetAddress host, int port) {
 		sendBytes(serializeObject(object), host, port);
 	}
 
+	/**
+	 * send certain bytes to a certain host at a port
+	 * 
+	 * @param bytes
+	 * @param host
+	 * @param port
+	 */
 	public static void sendBytes(byte[] bytes, InetAddress host, int port) {
 		DatagramPacket packet = new DatagramPacket(bytes, bytes.length, host, port);
 		DatagramSocket socker = null;
@@ -70,37 +99,12 @@ public class UDPServer implements Runnable {
 		}
 	}
 
-	public static <T> T recieveObject(InetAddress address, int port, int timeout, Class<T> clazz)
-			throws SocketTimeoutException {
-		return deSerializeObject(recieveBytes(address, port, timeout), clazz);
-	}
-
-	public static byte[] recieveBytes(InetAddress address, int port, int timeout) throws SocketTimeoutException {
-		DatagramSocket socket;
-		try {
-			socket = new DatagramSocket(port);
-		} catch (SocketException e) {
-			throw new RuntimeException(e);
-		}
-		DatagramPacket packet = new DatagramPacket(new byte[BUFFERSIZE], BUFFERSIZE);
-		try {
-			socket.setSoTimeout(timeout);
-			socket.receive(packet);
-			socket.setSoTimeout(0);
-		} catch (SocketTimeoutException e) {
-			throw e;
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} finally {
-			if (socket != null)
-				socket.close();
-		}
-		if (!Arrays.equals(packet.getAddress().getAddress(), address.getAddress())) {
-			throw new RuntimeException("RecievePacket From WrongIP");
-		}
-		return Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
-	}
-
+	/**
+	 * serialize java object into byte array
+	 * 
+	 * @param object
+	 * @return
+	 */
 	public static byte[] serializeObject(Serializable object) {
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		ObjectOutputStream output;
@@ -113,6 +117,13 @@ public class UDPServer implements Runnable {
 		return byteArrayOutputStream.toByteArray();
 	}
 
+	/**
+	 * deserialized byte array into java object
+	 * 
+	 * @param bytes
+	 * @param clazz
+	 * @return
+	 */
 	public static <T> T deSerializeObject(byte[] bytes, Class<T> clazz) {
 		try {
 			ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(bytes));

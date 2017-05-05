@@ -1,8 +1,9 @@
-package request;
+package distributedHashTable;
 
 import java.net.InetAddress;
 
-import distributedHashTable.DistributedHashTable;
+import request.Message;
+import request.SimpleACKMessage;
 
 /**
  * The message to check if the a certain node is alive

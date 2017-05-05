@@ -13,11 +13,11 @@ public class Main {
 		DistributedHashTable dht = DistributedHashTable.getIntance();
 		if (args.length > 0) {
 			String hostNameToJoin = args[0];
-			if (Settings.VERBOSE)
+			if (Settings.isVerbose())
 				System.out.println("[INFO] Attempting to join cluster from entry host: " + hostNameToJoin);
 			dht.joinCluster(InetAddress.getByName(hostNameToJoin));
 		} else {
-			if (Settings.VERBOSE)
+			if (Settings.isVerbose())
 				System.out.println("[INFO] No argument passed in, skip attempting to join another host");
 		}
 		while (true)

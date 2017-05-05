@@ -2,8 +2,14 @@ package request;
 
 import java.net.InetAddress;
 
+/**
+ * The most simple concrete {@link AbstractACKMessage} that triggers no action
+ * when recieved
+ * 
+ * @author fredzqm
+ *
+ */
 public class SimpleACKMessage extends AbstractACKMessage {
-
 	/**
 	 * 
 	 */

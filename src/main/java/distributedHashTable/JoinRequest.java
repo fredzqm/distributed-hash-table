@@ -1,9 +1,10 @@
-package request;
+package distributedHashTable;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import distributedHashTable.DistributedHashTable;
+import request.AbstractACKMessage;
+import request.Message;
 
 /**
  * The request to join a cluster

@@ -4,16 +4,13 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-import request.CheckAliveMessage;
-import request.JoinRequest;
+import request.CommunictionHandler;
 import request.Message;
 
 public class DistributedHashTable {
-	private Set<String> addresses;
+//	private Set<String> addresses;
 	private Map<String, String> map;
 
 	private CommunictionHandler requestParser;
@@ -22,7 +19,7 @@ public class DistributedHashTable {
 	private InetAddress right;
 
 	private DistributedHashTable() {
-		this.addresses = new HashSet<>();
+//		this.addresses = new HashSet<>();
 		this.map = new HashMap<>();
 		this.requestParser = new CommunictionHandler();
 	}
@@ -85,7 +82,7 @@ public class DistributedHashTable {
 	}
 
 	public synchronized void checkNeighbor() {
-		if (Settings.VERBOSE)
+		if (Settings.isVerbose())
 			System.out.println("Checking Neighbors");
 		if (right == null)
 			throw new RuntimeException("[ERROR] right is null");
