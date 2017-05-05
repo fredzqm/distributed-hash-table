@@ -36,7 +36,7 @@ public class Logger {
 	 * @param args
 	 */
 	public static void logInfo(String format, Object... args) {
-		// System.err.printf("[INFO] " + format + "\n", args);
+		System.err.printf("[INFO] " + format + "\n", args);
 	}
-	
+
 }
