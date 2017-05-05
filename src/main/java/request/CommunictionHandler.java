@@ -3,6 +3,7 @@ package request;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.HashSet;
+import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Set;
 
@@ -20,19 +21,30 @@ import networkUtility.UDPServer;
  * @author fredzqm
  *
  */
-public class CommunictionHandler implements IDatagramPacketListener {
-	public static final int PORT = 4444;
+public class CommunictionHandler implements IDatagramPacketListener, Runnable {
+	private final int port;
 	private UDPServer server;
 	private Set<Integer> ackWaiting;
 	private Random random;
+	private Thread timeOutCheckThread;
+	private PriorityQueue<UnACKeDMessage> unACKedMessages;
 
-	public CommunictionHandler() {
+	/**
+	 * constructs a communication handler at
+	 * 
+	 * @param port
+	 */
+	public CommunictionHandler(int port) {
+		this.port = port;
 		this.ackWaiting = new HashSet<>();
+		this.unACKedMessages = new PriorityQueue<>();
 		this.random = new Random();
-		this.server = new UDPServer(PORT, this);
+		this.server = new UDPServer(port, this);
 		this.server.start();
+		this.timeOutCheckThread = new Thread(this);
+		this.timeOutCheckThread.start();
 	}
-
+	
 	@Override
 	public void onRecieved(DatagramPacket packet) {
 		InetAddress addr = packet.getAddress();
@@ -65,23 +77,11 @@ public class CommunictionHandler implements IDatagramPacketListener {
 		if (message.requireACK()) {
 			int requestID = generateUniqueRequestID();
 			message.setRequestID(requestID);
-			(new Thread(() -> {
-				try {
-					Thread.sleep(message.getTimeOut());
-					if (ackWaiting.contains(ackWaiting)) {
-						message.timeOut(address);
-					} else {
-						message.acknowledge();
-					}
-				} catch (InterruptedException e) {
-					System.err.println("Waiting for " + message + " is interrrupted, trigger timout");
-					message.timeOut(address);
-				}
-			})).start();
+			addToUnackedMessageQueue(new UnACKeDMessage(message, address));
 		}
 		if (Settings.isVerbose())
 			System.out.println("[INFO] send message" + message);
-		UDPServer.sendObject(message, address, PORT);
+		UDPServer.sendObject(message, address, port);
 	}
 
 	private synchronized int generateUniqueRequestID() {
@@ -92,6 +92,82 @@ public class CommunictionHandler implements IDatagramPacketListener {
 				return requestID;
 			}
 		}
+	}
+
+	private synchronized void addToUnackedMessageQueue(UnACKeDMessage unACKedMessage) {
+		boolean wakeUpTimeOutThread = this.unACKedMessages.isEmpty()
+				|| unACKedMessage.getTime() < this.unACKedMessages.peek().getTime();
+		this.unACKedMessages.add(unACKedMessage);
+		if (wakeUpTimeOutThread) {
+			this.notifyAll();
+		}
+	}
+
+	@Override
+	public synchronized void run() {
+		while (true) {
+			while (this.unACKedMessages.isEmpty()) {
+				try {
+					this.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			long left = this.unACKedMessages.peek().getTime() - System.currentTimeMillis();
+			if (left > 0) {
+				try {
+					this.wait(left);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			while (!this.unACKedMessages.isEmpty()) {
+				UnACKeDMessage next = this.unACKedMessages.peek();
+				if (!next.checkTimeOut(this.ackWaiting))
+					break;
+				this.unACKedMessages.poll();
+			}
+		}
+	}
+
+	private static class UnACKeDMessage implements Comparable<UnACKeDMessage> {
+		private Message message;
+		private long time;
+		private InetAddress address;
+
+		public UnACKeDMessage(Message message, InetAddress address) {
+			this.message = message;
+			this.address = address;
+			this.time = System.currentTimeMillis() + message.getTimeOut();
+		}
+
+		/**
+		 * 
+		 * @param ackWaiting
+		 * @return true if this message's time is up and processed and should be
+		 *         removed from the queue, false if the time is not up yet
+		 */
+		public boolean checkTimeOut(Set<Integer> ackWaiting) {
+			if (this.time < System.currentTimeMillis()) {
+				if (ackWaiting.contains(this.message.getRequestID())) {
+					this.message.timeOut(address);
+				} else {
+					this.message.acknowledge();
+				}
+				return true;
+			}
+			return false;
+		}
+
+		public long getTime() {
+			return time;
+		}
+
+		@Override
+		public int compareTo(UnACKeDMessage o) {
+			return (int) (time - o.time);
+		}
+
 	}
 
 }
