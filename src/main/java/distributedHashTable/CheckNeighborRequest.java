@@ -30,14 +30,8 @@ public class CheckNeighborRequest extends Message {
 	@Override
 	public void handleRequest(InetAddress address, Message acknowleged) {
 		DistributedHashTable dht = DistributedHashTable.getIntance();
-		String side = getSideStr(!this.reachingRight);
 		InetAddress correspondSide = dht.getSide(!this.reachingRight);
-		if (correspondSide == null) {
-			System.err.println("[ERROR] " + side + " is null");
-			dht.sentMessage(new CheckAliveNAK(this.getRequestID()), address);
-		} else if (!address.getHostAddress().equals(correspondSide.getHostAddress())) {
-			System.err.println("[ERROR] " + side + " is " + correspondSide.getHostAddress() + " while should be "
-					+ address.getHostAddress());
+		if (correspondSide == null || !address.getHostAddress().equals(correspondSide.getHostAddress())) {
 			dht.sentMessage(new CheckAliveNAK(this.getRequestID()), address);
 		} else {
 			dht.sentMessage(new CheckAliveACK(this.getRequestID()), address);
@@ -77,7 +71,8 @@ public class CheckNeighborRequest extends Message {
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			CheckNeighborRequest checkAliveMessage = (CheckNeighborRequest) acknowleged;
-			System.out.println("[INFO] " + getSideStr(checkAliveMessage.reachingRight) + " is not properly wired");
+			if (Settings.isInfo())
+				System.out.println("[INFO] " + getSideStr(checkAliveMessage.reachingRight) + " is not properly wired");
 			DistributedHashTable.getIntance().checkNeighbor(checkAliveMessage.reachingRight);
 		}
 
@@ -96,7 +91,9 @@ public class CheckNeighborRequest extends Message {
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			CheckNeighborRequest checkAliveMessage = (CheckNeighborRequest) acknowleged;
-			System.out.println("[INFO] " + getSideStr(checkAliveMessage.reachingRight) + " is properly wired");
+			if (Settings.isProgress())
+				System.out.println("[PROGRESS] " + getSideStr(checkAliveMessage.reachingRight) + " is properly wired with "
+						+ address.getHostAddress());
 		}
 
 	}

@@ -48,14 +48,15 @@ public class CommunictionHandler implements IDatagramPacketListener, Runnable {
 	public void onRecieved(DatagramPacket packet) {
 		InetAddress addr = packet.getAddress();
 		Message request = UDPServer.deSerializeObject(packet.getData(), Message.class);
-		if (Settings.isVerbose())
+		if (Settings.isInfo())
 			System.out.println("[INFO] recieving message " + request + " from " + packet.getAddress().getHostAddress());
 		Message acknowledged = null;
 		if (request.getACKID() != 0) {
 			acknowledged = ackWaiting.remove(request.getACKID());
 			if (acknowledged == null)
-				System.out.println("[ERROR] recieved ack for request " + request.getACKID()
-						+ " but is not in the ackWaiting pool");
+				if (Settings.isError())
+					System.out.println("[ERROR] recieved ack for request " + request.getACKID()
+							+ " but is not in the ackWaiting pool");
 		}
 		request.handleRequest(addr, acknowledged);
 	}
@@ -78,7 +79,7 @@ public class CommunictionHandler implements IDatagramPacketListener, Runnable {
 		if (message.requireACK()) {
 			addToACKQueue(message, address);
 		}
-		if (Settings.isVerbose())
+		if (Settings.isInfo())
 			System.out.println("[INFO] send message " + message + " to " + address.getHostAddress());
 		UDPServer.sendObject(message, address, port);
 	}

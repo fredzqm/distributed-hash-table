@@ -8,14 +8,28 @@ package distributedHashTable;
  *
  */
 public class Settings {
-	private final static boolean VERBOSE = true;
 
 	/**
 	 * 
-	 * @return true if [INFO} logs will be shown
+	 * @return true if [ERROR] logs will be shown
 	 */
-	public static boolean isVerbose() {
-		return VERBOSE;
+	public static boolean isError() {
+		return true;
 	}
 
+	/**
+	 * 
+	 * @return true if [PROGRESS] logs will be shown
+	 */
+	public static boolean isProgress() {
+		return true;
+	}
+	
+	/**
+	 * 
+	 * @return true if [INFO] logs will be shown
+	 */
+	public static boolean isInfo() {
+		return false;
+	}
 }
