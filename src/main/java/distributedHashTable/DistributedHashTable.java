@@ -88,11 +88,11 @@ public class DistributedHashTable {
 			System.out.println("Checking Neighbors");
 		if (right == null)
 			throw new RuntimeException("[ERROR] right is null");
-		CheckAliveMessage forRight = new CheckAliveMessage("Right");
+		CheckNeighborRequest forRight = new CheckNeighborRequest(true);
 		sentMessage(forRight, right);
 		if (left == null)
 			throw new RuntimeException("[ERROR] left is null");
-		CheckAliveMessage forLeft = new CheckAliveMessage("Left");
+		CheckNeighborRequest forLeft = new CheckNeighborRequest(false);
 		sentMessage(forLeft, left);
 	}
 
