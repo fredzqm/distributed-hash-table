@@ -71,8 +71,7 @@ public class CheckNeighborRequest extends Message {
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			CheckNeighborRequest checkAliveMessage = (CheckNeighborRequest) acknowleged;
-			if (Settings.isInfo())
-				System.out.println("[INFO] " + getSideStr(checkAliveMessage.reachingRight) + " is not properly wired");
+			Logger.logInfo("%s is not properly wired", getSideStr(checkAliveMessage.reachingRight));
 			DistributedHashTable.getIntance().checkNeighbor(checkAliveMessage.reachingRight);
 		}
 
@@ -91,9 +90,8 @@ public class CheckNeighborRequest extends Message {
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			CheckNeighborRequest checkAliveMessage = (CheckNeighborRequest) acknowleged;
-			if (Settings.isProgress())
-				System.out.println("[PROGRESS] " + getSideStr(checkAliveMessage.reachingRight) + " is properly wired with "
-						+ address.getHostAddress());
+			Logger.logProgress("%s  is properly wired with %s", getSideStr(checkAliveMessage.reachingRight),
+					address.getHostAddress());
 		}
 
 	}

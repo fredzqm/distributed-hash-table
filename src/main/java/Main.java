@@ -5,7 +5,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 import distributedHashTable.DistributedHashTable;
-import distributedHashTable.Settings;
+import distributedHashTable.Logger;
 
 public class Main {
 
@@ -13,12 +13,10 @@ public class Main {
 		DistributedHashTable dht = DistributedHashTable.getIntance();
 		if (args.length > 0) {
 			String hostNameToJoin = args[0];
-			if (Settings.isProgress())
-				System.out.println("[PROGRESS] Attempting to join cluster from entry host: " + hostNameToJoin);
+			Logger.logProgress("Attempting to join cluster from entry host: %s", hostNameToJoin);
 			dht.joinCluster(InetAddress.getByName(hostNameToJoin));
 		} else {
-			if (Settings.isProgress())
-				System.out.println("[PROGRESS] No argument passed in, skip attempting to join another host");
+			Logger.logProgress("No argument passed in, skip attempting to join another host");
 		}
 		while (true)
 			;

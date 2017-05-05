@@ -31,8 +31,7 @@ public class DistributedHashTable {
 	}
 
 	public void setLeft(InetAddress left) {
-		if (Settings.isInfo())
-			System.out.println("[INFO]: set left to be " + left.getHostName());
+		Logger.logInfo("set left to be %s", left.getHostName());
 		this.left = left;
 	}
 
@@ -41,8 +40,7 @@ public class DistributedHashTable {
 	}
 
 	public void setRight(InetAddress right) {
-		if (Settings.isInfo())
-			System.out.println("[INFO]: set right to be " + right.getHostName());
+		Logger.logInfo("set right to be %s", right.getHostName());
 		this.right = right;
 	}
 
@@ -93,17 +91,15 @@ public class DistributedHashTable {
 
 	public synchronized void checkNeighbor(boolean reachingRight) {
 		if (reachingRight) {
-			if (Settings.isInfo())
-				System.out.println("[INFO] Checking right");
 			if (right == null)
 				throw new RuntimeException("[ERROR] right is null");
+			Logger.logInfo("[INFO] Checking right: %s", right.getHostAddress());
 			CheckNeighborRequest forRight = new CheckNeighborRequest(true);
 			sentMessage(forRight, right);
 		} else {
-			if (Settings.isInfo())
-				System.out.println("[INFO] Checking left");
 			if (left == null)
 				throw new RuntimeException("[ERROR] left is null");
+			Logger.logInfo("[INFO] Checking left: %s", left.getHostAddress());
 			CheckNeighborRequest forLeft = new CheckNeighborRequest(false);
 			sentMessage(forLeft, left);
 		}

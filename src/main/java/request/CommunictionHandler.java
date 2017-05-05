@@ -8,7 +8,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import distributedHashTable.Settings;
+import distributedHashTable.Logger;
 import networkUtility.IDatagramPacketListener;
 import networkUtility.UDPServer;
 
@@ -48,15 +48,12 @@ public class CommunictionHandler implements IDatagramPacketListener, Runnable {
 	public void onRecieved(DatagramPacket packet) {
 		InetAddress addr = packet.getAddress();
 		Message request = UDPServer.deSerializeObject(packet.getData(), Message.class);
-		if (Settings.isInfo())
-			System.out.println("[INFO] recieving message " + request + " from " + packet.getAddress().getHostAddress());
+		Logger.logInfo("recieving message %d from %s", request, packet.getAddress().getHostAddress());
 		Message acknowledged = null;
 		if (request.getACKID() != 0) {
 			acknowledged = ackWaiting.remove(request.getACKID());
 			if (acknowledged == null)
-				if (Settings.isError())
-					System.out.println("[ERROR] recieved ack for request " + request.getACKID()
-							+ " but is not in the ackWaiting pool");
+				Logger.logError("recieved ack for request %d but is not in the ackWaiting pool", request.getACKID());
 		}
 		request.handleRequest(addr, acknowledged);
 	}
@@ -79,8 +76,7 @@ public class CommunictionHandler implements IDatagramPacketListener, Runnable {
 		if (message.requireACK()) {
 			addToACKQueue(message, address);
 		}
-		if (Settings.isInfo())
-			System.out.println("[INFO] send message " + message + " to " + address.getHostAddress());
+		Logger.logInfo("send message %s to %s", message, address.getHostAddress());
 		UDPServer.sendObject(message, address, port);
 	}
 
