@@ -31,6 +31,7 @@ public class DistributedHashTable {
 	}
 
 	public void setLeft(InetAddress left) {
+		System.out.println("[INFO]: set left to be " + left.getHostName());
 		this.left = left;
 	}
 
@@ -39,7 +40,12 @@ public class DistributedHashTable {
 	}
 
 	public void setRight(InetAddress right) {
+		System.out.println("[INFO]: set right to be " + right.getHostName());
 		this.right = right;
+	}
+
+	public InetAddress getSide(boolean isRight) {
+		return isRight ? getRight() : getLeft();
 	}
 
 	public void sentMessage(Message message, InetAddress address) {
@@ -83,17 +89,27 @@ public class DistributedHashTable {
 		return table;
 	}
 
+	public synchronized void checkNeighbor(boolean reachingRight) {
+		if (reachingRight) {
+			if (Settings.isVerbose())
+				System.out.println("Checking right");
+			if (right == null)
+				throw new RuntimeException("[ERROR] right is null");
+			CheckNeighborRequest forRight = new CheckNeighborRequest(true);
+			sentMessage(forRight, right);
+		} else {
+			if (Settings.isVerbose())
+				System.out.println("Checking left");
+			if (left == null)
+				throw new RuntimeException("[ERROR] left is null");
+			CheckNeighborRequest forLeft = new CheckNeighborRequest(false);
+			sentMessage(forLeft, left);
+		}
+	}
+
 	public synchronized void checkNeighbor() {
-		if (Settings.isVerbose())
-			System.out.println("Checking Neighbors");
-		if (right == null)
-			throw new RuntimeException("[ERROR] right is null");
-		CheckNeighborRequest forRight = new CheckNeighborRequest(true);
-		sentMessage(forRight, right);
-		if (left == null)
-			throw new RuntimeException("[ERROR] left is null");
-		CheckNeighborRequest forLeft = new CheckNeighborRequest(false);
-		sentMessage(forLeft, left);
+		checkNeighbor(true);
+		checkNeighbor(false);
 	}
 
 	@Override

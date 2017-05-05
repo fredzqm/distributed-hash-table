@@ -3,7 +3,6 @@ package distributedHashTable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import request.AbstractACKMessage;
 import request.Message;
 import request.SimpleACKMessage;
 
@@ -38,11 +37,15 @@ public class JoinRequest extends Message {
 			// right to update its left
 			dht.sentMessage(new UpdateLeftRequest(address.getHostAddress()), dht.getRight());
 			dht.sentMessage(new JoinResponse(getRequestID(), null, dht.getRight().getHostAddress()), address);
+			dht.setRight(address);
 		} else {
 			// there is only one node in this cluster, just connects both left
 			// and right to me
 			dht.sentMessage(new JoinResponse(getRequestID(), null, null), address);
+			dht.setRight(address);
+			dht.setLeft(address);
 		}
+		dht.checkNeighbor();
 	}
 
 	@Override
@@ -72,12 +75,12 @@ public class JoinRequest extends Message {
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			DistributedHashTable dht = DistributedHashTable.getIntance();
-			dht.sentMessage(new SimpleACKMessage(getRequestID()), address);
 			try {
 				dht.setLeft(InetAddress.getByName(this.newLeft));
 			} catch (UnknownHostException e) {
 				throw new RuntimeException(e);
 			}
+			dht.sentMessage(new SimpleACKMessage(getRequestID()), address);
 			dht.checkNeighbor();
 		}
 
@@ -141,7 +144,7 @@ public class JoinRequest extends Message {
 			else
 				dht.setLeft(address);
 			dht.checkNeighbor();
-			dht.sentMessage(new JoinACK(getRequestID()), address);
+			dht.sentMessage(new SimpleACKMessage(getRequestID()), address);
 		}
 
 		@Override
@@ -155,25 +158,9 @@ public class JoinRequest extends Message {
 			DistributedHashTable.getIntance().sentMessage(this, address);
 		}
 
-	}
-
-	public static class JoinACK extends AbstractACKMessage {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-
-		public JoinACK(int requestID) {
-			super(requestID);
-		}
-
 		@Override
-		public void handleRequest(InetAddress address, Message acknowleged) {
-			DistributedHashTable dht = DistributedHashTable.getIntance();
-			dht.setRight(address);
-			if (dht.getLeft() == null) // there is only two nodes
-				dht.setLeft(address);
-			dht.checkNeighbor();
+		public String toString() {
+			return "JoinResponse leftIP: " + yourLeftIP + " rightIP: " + yourRightIP + "\t" + super.toString();
 		}
 	}
 

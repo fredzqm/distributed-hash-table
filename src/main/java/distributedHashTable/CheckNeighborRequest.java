@@ -17,38 +17,51 @@ public class CheckNeighborRequest extends Message {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private transient boolean isRight;
-	private transient int times;
+	private boolean reachingRight;
 
 	/**
 	 * creates a checkAliveMessage
 	 */
 	public CheckNeighborRequest(boolean isRight) {
 		super(0);
-		this.isRight = !isRight;
-		this.times = 0;
+		this.reachingRight = isRight;
 	}
 
 	@Override
 	public void handleRequest(InetAddress address, Message acknowleged) {
 		DistributedHashTable dht = DistributedHashTable.getIntance();
-		InetAddress correspondSide = this.isRight ? dht.getRight() : dht.getRight();
-		if (correspondSide == null || address.getHostAddress().equals(correspondSide.getHostAddress()))
-			dht.sentMessage(new CheckAliveACK(this.getRequestID()), address);
-		else
+		String side = getSideStr(!this.reachingRight);
+		InetAddress correspondSide = dht.getSide(!this.reachingRight);
+		if (correspondSide == null) {
+			System.err.println("[ERROR] " + side + " is null");
 			dht.sentMessage(new CheckAliveNAK(this.getRequestID()), address);
+		} else if (!address.getHostAddress().equals(correspondSide.getHostAddress())) {
+			System.err.println("[ERROR] " + side + " is " + correspondSide.getHostAddress() + " while should be "
+					+ address.getHostAddress());
+			dht.sentMessage(new CheckAliveNAK(this.getRequestID()), address);
+		} else {
+			dht.sentMessage(new CheckAliveACK(this.getRequestID()), address);
+		}
 	}
 
 	@Override
 	public long getTimeOut() {
-		return 100;
+		return 1000;
 	}
 
 	@Override
 	public void timeOut(InetAddress address) {
-		System.err.println("[ERROR] " + isRight + " is not responding -- " + times);
-		times++;
+		System.err.println("[ERROR] " + getSideStr(reachingRight) + " is not responding");
 		DistributedHashTable.getIntance().sentMessage(this, address);
+	}
+
+	@Override
+	public String toString() {
+		return String.format("Reaching %s\t%s", getSideStr(reachingRight), super.toString());
+	}
+
+	public static String getSideStr(boolean isRight) {
+		return isRight ? "right" : "left";
 	}
 
 	public class CheckAliveNAK extends AbstractACKMessage {
@@ -64,8 +77,8 @@ public class CheckNeighborRequest extends Message {
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			CheckNeighborRequest checkAliveMessage = (CheckNeighborRequest) acknowleged;
-			System.out.println("[INFO] " + (checkAliveMessage.isRight ? "Right" : "Left") + " is not properly wired");
-			acknowleged.timeOut(address);
+			System.out.println("[INFO] " + getSideStr(checkAliveMessage.reachingRight) + " is not properly wired");
+			DistributedHashTable.getIntance().checkNeighbor(checkAliveMessage.reachingRight);
 		}
 
 	}
@@ -83,7 +96,7 @@ public class CheckNeighborRequest extends Message {
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			CheckNeighborRequest checkAliveMessage = (CheckNeighborRequest) acknowleged;
-			System.out.println("[INFO] " + (checkAliveMessage.isRight ? "Right" : "Left") + " is properly wired");
+			System.out.println("[INFO] " + getSideStr(checkAliveMessage.reachingRight) + " is properly wired");
 		}
 
 	}

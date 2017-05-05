@@ -49,7 +49,7 @@ public class CommunictionHandler implements IDatagramPacketListener, Runnable {
 		InetAddress addr = packet.getAddress();
 		Message request = UDPServer.deSerializeObject(packet.getData(), Message.class);
 		if (Settings.isVerbose())
-			System.out.println("[INFO] recieving message" + request);
+			System.out.println("[INFO] recieving message " + request + " from " + packet.getAddress().getHostAddress());
 		Message acknowledged = null;
 		if (request.getACKID() != 0) {
 			acknowledged = ackWaiting.remove(request.getACKID());
@@ -79,7 +79,7 @@ public class CommunictionHandler implements IDatagramPacketListener, Runnable {
 			addToACKQueue(message, address);
 		}
 		if (Settings.isVerbose())
-			System.out.println("[INFO] send message" + message);
+			System.out.println("[INFO] send message " + message + " to " + address.getHostAddress());
 		UDPServer.sendObject(message, address, port);
 	}
 

@@ -63,7 +63,7 @@ public abstract class Message implements Serializable {
 	 * 
 	 * @param address
 	 *            the address this message is from
-	 * @param acknowleged 
+	 * @param acknowleged
 	 */
 	public abstract void handleRequest(InetAddress address, Message acknowleged);
 
@@ -82,4 +82,10 @@ public abstract class Message implements Serializable {
 	 *            the address this message were supposed to be sent to
 	 */
 	public abstract void timeOut(InetAddress address);
+
+	@Override
+	public String toString() {
+		return String.format("ID:%d, ack:%d, class:%s", this.requstID, this.ackForID,
+				this.getClass().getSimpleName());
+	}
 }
