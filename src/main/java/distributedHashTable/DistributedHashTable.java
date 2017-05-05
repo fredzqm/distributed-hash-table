@@ -10,7 +10,9 @@ import request.CommunictionHandler;
 import request.Message;
 
 public class DistributedHashTable {
-//	private Set<String> addresses;
+	private static final int REQUEST_PARSER_PORT = 4444;
+
+	// private Set<String> addresses;
 	private Map<String, String> map;
 
 	private CommunictionHandler requestParser;
@@ -19,9 +21,9 @@ public class DistributedHashTable {
 	private InetAddress right;
 
 	private DistributedHashTable() {
-//		this.addresses = new HashSet<>();
+		// this.addresses = new HashSet<>();
 		this.map = new HashMap<>();
-		this.requestParser = new CommunictionHandler();
+		this.requestParser = new CommunictionHandler(REQUEST_PARSER_PORT);
 	}
 
 	public InetAddress getLeft() {
