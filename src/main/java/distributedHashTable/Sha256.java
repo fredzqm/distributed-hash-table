@@ -32,7 +32,7 @@ public class Sha256 implements Serializable, Comparable<Sha256> {
 
 	public BigInteger getNum() {
 		if (num == null) {
-			num = new BigInteger(hash);
+			num = new BigInteger(1, hash);
 		}
 		return num;
 	}
@@ -94,7 +94,7 @@ public class Sha256 implements Serializable, Comparable<Sha256> {
 
 	private static BigInteger maxPosShaNum;
 
-	private static BigInteger getMaxPosSha() {
+	protected static BigInteger getMaxPosSha() {
 		if (maxPosShaNum == null) {
 			byte[] x = new byte[33];
 			x[0] = 1;
