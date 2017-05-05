@@ -47,7 +47,6 @@ public class Sha256 implements Serializable, Comparable<Sha256> {
 			if (diff != 0)
 				return diff;
 		}
-		Logger.logError("There is an Sha256 collision");
 		return 0;
 	}
 
@@ -61,5 +60,26 @@ public class Sha256 implements Serializable, Comparable<Sha256> {
 			hexString.append(hex);
 		}
 		return hexString.toString();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Sha256) {
+			return this.compareTo((Sha256) obj) == 0;
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return (this.hash[0] << 24) | (this.hash[1] << 16) | (this.hash[2] << 8) | this.hash[3];
+	}
+
+	public static Sha256 middle(Sha256 left, Sha256 right) {
+		return right;
+	}
+
+	public static boolean inOrder(Sha256 x, Sha256 mid, Sha256 y) {
+		return true;
 	}
 }

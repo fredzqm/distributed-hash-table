@@ -11,14 +11,14 @@ import java.net.UnknownHostException;
  */
 public class NodeInfo {
 	private final InetAddress address;
-	private final String sha;
+	private final Sha256 sha;
 
-	public NodeInfo(InetAddress address, String sha) {
+	public NodeInfo(InetAddress address, Sha256 sha) {
 		this.address = address;
 		this.sha = sha;
 	}
 
-	public NodeInfo(String IP, String sha) {
+	public NodeInfo(String IP, Sha256 sha) {
 		try {
 			this.address = InetAddress.getByName(IP);
 		} catch (UnknownHostException e) {
@@ -31,7 +31,7 @@ public class NodeInfo {
 		return address;
 	}
 
-	public String getSha() {
+	public Sha256 getSha() {
 		return sha;
 	}
 

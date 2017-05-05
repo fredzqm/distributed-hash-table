@@ -31,22 +31,23 @@ public class JoinRequest extends Message {
 
 		// TODO: in the future actually figure out a proper position to
 		// insert it. Right now just insert at the right side
-		NodeInfo nodeInfoFrom = new NodeInfo(address, "sha");
 		NodeInfo right = dht.getRight();
+		Sha256 shaThis = dht.getSha();
 		if (right != null) {
 			// there is already more than two nodes in the cluster, ask the
 			// right to update its left
-			String sha = right.getSha();
-			
-			dht.sentMessage(new UpdateLeftRequest(address.getHostAddress()), dht.getRight().getAddress());
-			dht.sentMessage(new JoinResponse(getRequestID(), null, dht.getRight().getHostAddress()), address);
-			dht.setRight(nodeInfoFrom);
+			Sha256 shaRight = right.getSha();
+			Sha256 sha = Sha256.middle(shaThis, shaRight);
+			dht.sentMessage(new UpdateLeftRequest(address.getHostAddress(), sha), dht.getRight().getAddress());
+			dht.sentMessage(new JoinResponse(getRequestID(), null, dht.getRight(), sha), address);
+			dht.setRight(new NodeInfo(address, sha));
 		} else {
 			// there is only one node in this cluster, just connects both left
 			// and right to me
-			dht.sentMessage(new JoinResponse(getRequestID(), null, null), address);
-			dht.setRight(nodeInfoFrom);
-			dht.setLeft(nodeInfoFrom);
+			Sha256 sha = Sha256.middle(shaThis, shaThis);
+			dht.sentMessage(new JoinResponse(getRequestID(), null, null, sha), address);
+			dht.setRight(new NodeInfo(address, sha));
+			dht.setLeft(new NodeInfo(address, sha));
 		}
 		dht.checkNeighbor();
 	}
@@ -69,16 +70,18 @@ public class JoinRequest extends Message {
 		private static final long serialVersionUID = 1L;
 
 		private String newLeft;
+		private Sha256 newLeftSha;
 
-		public UpdateLeftRequest(String newLeft) {
+		public UpdateLeftRequest(String newLeft, Sha256 newLeftSha) {
 			super(0);
 			this.newLeft = newLeft;
+			this.newLeftSha = newLeftSha;
 		}
 
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			DistributedHashTable dht = DistributedHashTable.getIntance();
-			dht.setLeft(new NodeInfo(this.newLeft, "sha"));
+			dht.setLeft(new NodeInfo(this.newLeft, this.newLeftSha));
 			dht.sentMessage(new SimpleACKMessage(getRequestID()), address);
 			dht.checkNeighbor();
 		}
@@ -109,31 +112,44 @@ public class JoinRequest extends Message {
 		private static final long serialVersionUID = 1L;
 
 		private String yourLeftIP;
+		private Sha256 yourLeftSha;
 		private String yourRightIP;
+		private Sha256 yourRightSha;
+		private Sha256 yourSha;
+		private Sha256 mySha;
 
 		/**
 		 * constructs an JoinRequest givens the requestID of corresponding join
 		 * request
 		 * 
 		 * @param joinRequestID
+		 * @param sha
 		 */
-		public JoinResponse(int joinRequestID, String leftIP, String rightIP) {
+		public JoinResponse(int joinRequestID, NodeInfo left, NodeInfo right, Sha256 sha) {
 			super(joinRequestID);
-			this.yourLeftIP = leftIP;
-			this.yourRightIP = rightIP;
+			if (left != null) {
+				this.yourLeftIP = left.getHostAddress();
+				this.yourLeftSha = left.getSha();
+			}
+			if (right != null) {
+				this.yourRightIP = right.getHostAddress();
+				this.yourLeftSha = right.getSha();
+			}
+			this.yourSha = sha;
+			this.mySha = DistributedHashTable.getIntance().getSha();
 		}
 
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			DistributedHashTable dht = DistributedHashTable.getIntance();
 			if (this.yourRightIP != null)
-				dht.setRight(new NodeInfo(this.yourRightIP, "sha"));
+				dht.setRight(new NodeInfo(this.yourRightIP, this.yourRightSha));
 			else
-				dht.setRight(new NodeInfo(address, "sha"));
+				dht.setRight(new NodeInfo(address, this.mySha));
 			if (this.yourLeftIP != null)
-				dht.setLeft(new NodeInfo(this.yourLeftIP, "sha"));
+				dht.setLeft(new NodeInfo(this.yourLeftIP, this.yourLeftSha));
 			else
-				dht.setLeft(new NodeInfo(address, "sha"));
+				dht.setLeft(new NodeInfo(address, this.mySha));
 			dht.checkNeighbor();
 			dht.sentMessage(new SimpleACKMessage(getRequestID()), address);
 		}

@@ -18,6 +18,7 @@ public class CheckNeighborRequest extends Message {
 	private static final long serialVersionUID = 1L;
 
 	private boolean reachingRight;
+	private Sha256 storedSha;
 
 	/**
 	 * creates a checkAliveMessage
@@ -25,13 +26,16 @@ public class CheckNeighborRequest extends Message {
 	public CheckNeighborRequest(boolean isRight) {
 		super(0);
 		this.reachingRight = isRight;
+		this.storedSha = DistributedHashTable.getIntance().getSide(isRight).getSha();
 	}
 
 	@Override
 	public void handleRequest(InetAddress address, Message acknowleged) {
 		DistributedHashTable dht = DistributedHashTable.getIntance();
-		InetAddress correspondSide = dht.getSideAddress(!this.reachingRight);
+		NodeInfo correspondSide = dht.getSide(!this.reachingRight);
 		if (correspondSide == null || !address.getHostAddress().equals(correspondSide.getHostAddress())) {
+			dht.sentMessage(new CheckAliveNAK(this.getRequestID()), address);
+		} else if (!this.storedSha.equals(dht.getSha())) {
 			dht.sentMessage(new CheckAliveNAK(this.getRequestID()), address);
 		} else {
 			dht.sentMessage(new CheckAliveACK(this.getRequestID()), address);

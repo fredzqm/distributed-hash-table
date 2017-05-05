@@ -15,6 +15,7 @@ public class DistributedHashTable {
 
 	private NodeInfo left;
 	private NodeInfo right;
+	private Sha256 sha;
 
 	private DistributedHashTable() {
 		// this.addresses = new HashSet<>();
@@ -40,13 +41,21 @@ public class DistributedHashTable {
 		this.right = right;
 	}
 
+	public Sha256 getSha() {
+		return sha;
+	}
+
+	public void setSha(Sha256 sha) {
+		this.sha = sha;
+	}
+
 	/**
 	 * 
 	 * @param isRight
 	 * @return the {@link InetAddress} at certain side
 	 */
-	public InetAddress getSideAddress(boolean isRight) {
-		return (isRight ? getRight() : getLeft()).getAddress();
+	public NodeInfo getSide(boolean isRight) {
+		return isRight ? getRight() : getLeft();
 	}
 
 	/**
