@@ -30,7 +30,7 @@ public class CheckNeighborRequest extends Message {
 	@Override
 	public void handleRequest(InetAddress address, Message acknowleged) {
 		DistributedHashTable dht = DistributedHashTable.getIntance();
-		InetAddress correspondSide = dht.getSide(!this.reachingRight);
+		InetAddress correspondSide = dht.getSideAddress(!this.reachingRight);
 		if (correspondSide == null || !address.getHostAddress().equals(correspondSide.getHostAddress())) {
 			dht.sentMessage(new CheckAliveNAK(this.getRequestID()), address);
 		} else {

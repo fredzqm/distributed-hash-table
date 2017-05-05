@@ -1,7 +1,6 @@
 package distributedHashTable;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import request.Message;
 import request.SimpleACKMessage;
@@ -32,18 +31,19 @@ public class JoinRequest extends Message {
 
 		// TODO: in the future actually figure out a proper position to
 		// insert it. Right now just insert at the right side
+		NodeInfo nodeInfoFrom = new NodeInfo(address, "sha");
 		if (dht.getRight() != null) {
 			// there is already more than two nodes in the cluster, ask the
 			// right to update its left
-			dht.sentMessage(new UpdateLeftRequest(address.getHostAddress()), dht.getRight());
+			dht.sentMessage(new UpdateLeftRequest(address.getHostAddress()), dht.getRight().getAddress());
 			dht.sentMessage(new JoinResponse(getRequestID(), null, dht.getRight().getHostAddress()), address);
-			dht.setRight(address);
+			dht.setRight(nodeInfoFrom);
 		} else {
 			// there is only one node in this cluster, just connects both left
 			// and right to me
 			dht.sentMessage(new JoinResponse(getRequestID(), null, null), address);
-			dht.setRight(address);
-			dht.setLeft(address);
+			dht.setRight(nodeInfoFrom);
+			dht.setLeft(nodeInfoFrom);
 		}
 		dht.checkNeighbor();
 	}
@@ -75,11 +75,7 @@ public class JoinRequest extends Message {
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			DistributedHashTable dht = DistributedHashTable.getIntance();
-			try {
-				dht.setLeft(InetAddress.getByName(this.newLeft));
-			} catch (UnknownHostException e) {
-				throw new RuntimeException(e);
-			}
+			dht.setLeft(new NodeInfo(this.newLeft, "sha"));
 			dht.sentMessage(new SimpleACKMessage(getRequestID()), address);
 			dht.checkNeighbor();
 		}
@@ -128,21 +124,13 @@ public class JoinRequest extends Message {
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			DistributedHashTable dht = DistributedHashTable.getIntance();
 			if (this.yourRightIP != null)
-				try {
-					dht.setRight(InetAddress.getByName(this.yourRightIP));
-				} catch (UnknownHostException e) {
-					throw new RuntimeException(e);
-				}
+				dht.setRight(new NodeInfo(this.yourRightIP, "sha"));
 			else
-				dht.setRight(address);
+				dht.setRight(new NodeInfo(address, "sha"));
 			if (this.yourLeftIP != null)
-				try {
-					dht.setLeft(InetAddress.getByName(this.yourLeftIP));
-				} catch (UnknownHostException e) {
-					throw new RuntimeException(e);
-				}
+				dht.setLeft(new NodeInfo(this.yourLeftIP, "sha"));
 			else
-				dht.setLeft(address);
+				dht.setLeft(new NodeInfo(address, "sha"));
 			dht.checkNeighbor();
 			dht.sentMessage(new SimpleACKMessage(getRequestID()), address);
 		}
