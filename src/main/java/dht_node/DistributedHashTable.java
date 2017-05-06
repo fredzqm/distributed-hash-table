@@ -1,6 +1,7 @@
 package dht_node;
 
 import java.net.InetAddress;
+import java.util.Map;
 
 import request.CommunicationHandler;
 import util.Logger;
@@ -8,9 +9,9 @@ import util.NodeInfo;
 
 public class DistributedHashTable {
 
-	// private Set<String> addresses;
-	// private Map<String, String> map;
+	private Map<String, String> map;
 	private NodeInfo myself, left, right;
+	public static String DIR_LOCATION = "/usr/var/dshared";
 
 	private DistributedHashTable() {
 		// this.addresses = new HashSet<>();
