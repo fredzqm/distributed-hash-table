@@ -1,4 +1,4 @@
-package distributedHashTable;
+package dht_node;
 
 /**
  * This should be an singleton class the managers the configuration of the

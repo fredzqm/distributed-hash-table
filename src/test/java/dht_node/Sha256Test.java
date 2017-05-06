@@ -1,10 +1,12 @@
-package distributedHashTable;
+package dht_node;
 
 import static org.junit.Assert.*;
 
 import java.math.BigInteger;
 
 import org.junit.Test;
+
+import dht_node.Sha256;
 
 public class Sha256Test {
 

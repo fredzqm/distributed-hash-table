@@ -1,6 +1,7 @@
-package distributedHashTable;
+package dht_node;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import request.CommunictionHandler;
 import request.Message;
@@ -142,5 +143,5 @@ public class DistributedHashTable {
 		}
 		return table;
 	}
-
+	
 }

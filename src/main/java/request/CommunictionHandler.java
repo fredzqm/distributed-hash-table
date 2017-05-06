@@ -8,7 +8,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import distributedHashTable.Logger;
+import dht_node.Logger;
 import networkUtility.IDatagramPacketListener;
 import networkUtility.UDPServer;
 

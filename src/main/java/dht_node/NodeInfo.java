@@ -1,4 +1,4 @@
-package distributedHashTable;
+package dht_node;
 
 import java.io.Serializable;
 import java.net.InetAddress;
