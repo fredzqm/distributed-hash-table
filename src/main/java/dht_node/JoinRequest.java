@@ -2,9 +2,9 @@ package dht_node;
 
 import java.net.InetAddress;
 
+import request.ACK;
 import request.CommunicationHandler;
 import request.Message;
-import request.SimpleACKMessage;
 import util.Logger;
 import util.NodeInfo;
 import util.Sha256;
@@ -88,7 +88,7 @@ public class JoinRequest extends Message {
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			DistributedHashTable dht = DistributedHashTable.getIntance();
 			dht.setLeft(newLeftNode);
-			CommunicationHandler.sendMessage(new SimpleACKMessage(getRequestID()), address);
+			CommunicationHandler.sendMessage(new ACK(getRequestID()), address);
 			dht.checkNeighbor();
 		}
 
@@ -141,7 +141,7 @@ public class JoinRequest extends Message {
 			dht.setMySelf(this.you);
 			dht.setLeft(this.left);
 			dht.setRight(this.right);
-			CommunicationHandler.sendMessage(new SimpleACKMessage(getRequestID()), address);
+			CommunicationHandler.sendMessage(new ACK(getRequestID()), address);
 			dht.checkNeighbor();
 		}
 
@@ -158,8 +158,7 @@ public class JoinRequest extends Message {
 
 		@Override
 		public String toString() {
-			return String.format("JoinResponse left: %s\tyourself: %s\trightIP: %s\t%s", left, you, right,
-					super.toString());
+			return super.toString() + String.format(" | JoinResponse left: %s\tyou: %s\tright: %s\t", left, you, right);
 		}
 	}
 

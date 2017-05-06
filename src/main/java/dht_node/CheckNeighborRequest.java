@@ -40,7 +40,8 @@ public class CheckNeighborRequest extends Message {
 		DistributedHashTable dht = DistributedHashTable.getIntance();
 		NodeInfo self = dht.getMyself();
 		if (self == null) {
-			CommunicationHandler.sendMessage(new CheckAliveNAK(this.getRequestID(), Logger.logError("This node is not yet initialized")),
+			CommunicationHandler.sendMessage(
+					new CheckAliveNAK(this.getRequestID(), Logger.logError("This node is not yet initialized")),
 					address);
 		} else if (!self.equals(this.you)) {
 			CommunicationHandler.sendMessage(new CheckAliveNAK(this.getRequestID(),
@@ -76,7 +77,7 @@ public class CheckNeighborRequest extends Message {
 
 	@Override
 	public String toString() {
-		return String.format("Reaching %s\t%s", getSideStr(reachingRight), super.toString());
+		return super.toString() + String.format(" | Reaching %s", getSideStr(reachingRight));
 	}
 
 	public static String getSideStr(boolean isRight) {

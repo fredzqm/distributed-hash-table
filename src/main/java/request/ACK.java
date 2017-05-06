@@ -9,13 +9,13 @@ import java.net.InetAddress;
  * @author fredzqm
  *
  */
-public class SimpleACKMessage extends AbstractACKMessage {
+public class ACK extends AbstractACKMessage {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public SimpleACKMessage(int ackForID) {
+	public ACK(int ackForID) {
 		super(ackForID);
 	}
 

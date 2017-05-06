@@ -5,7 +5,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -31,7 +30,7 @@ public class CommunicationHandler implements IDatagramPacketListener, Runnable {
 	private final int PORT;
 	private UDPServer server;
 	private Map<Integer, Message> ackWaiting;
-	private Random random;
+	private int lastTime;
 	private PriorityQueue<UnACKeDMessage> unACKedMessages;
 
 	/**
@@ -43,7 +42,7 @@ public class CommunicationHandler implements IDatagramPacketListener, Runnable {
 		this.PORT = REQUEST_PARSER_PORT;
 		this.ackWaiting = new ConcurrentHashMap<>();
 		this.unACKedMessages = new PriorityQueue<>();
-		this.random = new Random();
+		this.lastTime = 1;
 		this.server = new UDPServer(PORT, this);
 	}
 
@@ -76,6 +75,8 @@ public class CommunicationHandler implements IDatagramPacketListener, Runnable {
 			acknowledged = ackWaiting.remove(request.getACKID());
 			if (acknowledged == null)
 				Logger.logError("recieved ack for requestID %d but is not in the ackWaiting pool", request.getACKID());
+			if (request.getACKID() - lastTime > 0)
+				lastTime = request.getACKID();
 		}
 		request.handleRequest(addr, acknowledged);
 	}
@@ -118,17 +119,16 @@ public class CommunicationHandler implements IDatagramPacketListener, Runnable {
 		if (message.requireACK()) {
 			addToACKQueue(message, address);
 		}
-		Logger.logInfo("send %s  to  %s", message, address.getHostAddress());
+		Logger.logInfo("send %s to %s", message, address.getHostAddress());
 		UDPServer.sendObject(message, address, PORT);
 	}
 
 	private synchronized void addToACKQueue(Message message, InetAddress address) {
-		int requestID = 0;
-		while (requestID == 0 || ackWaiting.containsKey(requestID)) {
-			requestID = random.nextInt();
-		}
-		message.setRequestID(requestID);
-		this.ackWaiting.put(requestID, message);
+		lastTime++;
+		if (lastTime == 0)
+			lastTime = 1;
+		message.setRequestID(lastTime);
+		this.ackWaiting.put(lastTime, message);
 		this.unACKedMessages.add(new UnACKeDMessage(message, address));
 		this.notifyAll();
 	}
