@@ -1,4 +1,4 @@
-package dht_node;
+package util;
 
 import java.io.Serializable;
 import java.net.InetAddress;

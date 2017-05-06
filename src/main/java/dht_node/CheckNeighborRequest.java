@@ -3,7 +3,10 @@ package dht_node;
 import java.net.InetAddress;
 
 import request.AbstractACKMessage;
+import request.CommunicationHandler;
 import request.Message;
+import util.Logger;
+import util.NodeInfo;
 
 /**
  * The message to check if the a certain node is alive
@@ -37,25 +40,25 @@ public class CheckNeighborRequest extends Message {
 		DistributedHashTable dht = DistributedHashTable.getIntance();
 		NodeInfo self = dht.getMyself();
 		if (self == null) {
-			dht.sentMessage(new CheckAliveNAK(this.getRequestID(), Logger.logError("This node is not yet initialized")),
+			CommunicationHandler.sendMessage(new CheckAliveNAK(this.getRequestID(), Logger.logError("This node is not yet initialized")),
 					address);
 		} else if (!self.equals(this.you)) {
-			dht.sentMessage(new CheckAliveNAK(this.getRequestID(),
+			CommunicationHandler.sendMessage(new CheckAliveNAK(this.getRequestID(),
 					Logger.logInfo("This node is %s, but recognized as %s", self, this.you)), address);
 		} else {
 			String side = getSideStr(!this.reachingRight);
 			NodeInfo correspondSide = dht.getSide(!this.reachingRight);
 			if (correspondSide == null) {
-				dht.sentMessage(
+				CommunicationHandler.sendMessage(
 						new CheckAliveNAK(this.getRequestID(), Logger.logInfo("%s is not yet initialized", side)),
 						address);
 			} else if (!correspondSide.equals(this.me)) {
-				dht.sentMessage(
+				CommunicationHandler.sendMessage(
 						new CheckAliveNAK(this.getRequestID(),
 								Logger.logInfo("Thought %s is %s, %s is actually %s", side, correspondSide, this.me)),
 						address);
 			} else {
-				dht.sentMessage(new CheckAliveACK(this.getRequestID()), address);
+				CommunicationHandler.sendMessage(new CheckAliveACK(this.getRequestID()), address);
 			}
 		}
 	}
@@ -68,7 +71,7 @@ public class CheckNeighborRequest extends Message {
 	@Override
 	public void timeOut(InetAddress address) {
 		System.err.println("[ERROR] " + getSideStr(reachingRight) + " is not responding");
-		DistributedHashTable.getIntance().sentMessage(this, address);
+		CommunicationHandler.sendMessage(this, address);
 	}
 
 	@Override

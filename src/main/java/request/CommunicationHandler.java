@@ -8,22 +8,26 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import dht_node.Logger;
 import networkUtility.IDatagramPacketListener;
 import networkUtility.UDPServer;
+import util.Logger;
 
 /**
  * The centralized communication handler for Our nodes Through this module, each
  * node can send and receive UDP {@link Message}. Each message needs to define
  * whether it requires acknowledgement {@link Message#requireACK()} If this is
- * true, then {@link CommunictionHandler} should tracks whether the ACK is
+ * true, then {@link CommunicationHandler} should tracks whether the ACK is
  * received, and trigger a timeout when necessary
  * 
  * @author fredzqm
  *
  */
-public class CommunictionHandler implements IDatagramPacketListener, Runnable {
-	private final int port;
+public class CommunicationHandler implements IDatagramPacketListener, Runnable {
+	public static final int REQUEST_PARSER_PORT = 4444;
+
+	private static CommunicationHandler instance;
+
+	private final int PORT;
 	private UDPServer server;
 	private Map<Integer, Message> ackWaiting;
 	private Random random;
@@ -32,16 +36,33 @@ public class CommunictionHandler implements IDatagramPacketListener, Runnable {
 	/**
 	 * constructs a communication handler at
 	 * 
-	 * @param port
+	 * @param PORT
 	 */
-	public CommunictionHandler(int port) {
-		this.port = port;
+	private CommunicationHandler() {
+		this.PORT = REQUEST_PARSER_PORT;
 		this.ackWaiting = new ConcurrentHashMap<>();
 		this.unACKedMessages = new PriorityQueue<>();
 		this.random = new Random();
-		this.server = new UDPServer(port, this);
+		this.server = new UDPServer(PORT, this);
+	}
+
+	/**
+	 * start to listen at port {@link CommunicationHandler#PORT}
+	 */
+	public void start() {
 		this.server.start();
 		new Thread(this).start();
+	}
+
+	public static CommunicationHandler getInstance() {
+		if (instance == null) {
+			synchronized (CommunicationHandler.class) {
+				if (instance == null) {
+					instance = new CommunicationHandler();
+				}
+			}
+		}
+		return instance;
 	}
 
 	@Override
@@ -60,7 +81,7 @@ public class CommunictionHandler implements IDatagramPacketListener, Runnable {
 
 	/**
 	 * send a message to an address. This message should be received by the
-	 * {@link CommunictionHandler} there, and
+	 * {@link CommunicationHandler} there, and
 	 * {@link Message#handleRequest(InetAddress)} should be called there
 	 * 
 	 * It this message requires ACK{@link Message#requireACK()}, and no ACK is
@@ -72,12 +93,16 @@ public class CommunictionHandler implements IDatagramPacketListener, Runnable {
 	 * @param address
 	 *            the address to send it to
 	 */
-	public void sendMessage(Message message, InetAddress address) {
+	public static void sendMessage(Message message, InetAddress address) {
+		getInstance()._sendMessage(message, address);
+	}
+
+	private void _sendMessage(Message message, InetAddress address) {
 		if (message.requireACK()) {
 			addToACKQueue(message, address);
 		}
 		Logger.logInfo("send message %s to %s", message, address.getHostAddress());
-		UDPServer.sendObject(message, address, port);
+		UDPServer.sendObject(message, address, PORT);
 	}
 
 	private synchronized void addToACKQueue(Message message, InetAddress address) {

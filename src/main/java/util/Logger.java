@@ -1,4 +1,4 @@
-package dht_node;
+package util;
 
 /**
  * This should be an singleton class the managers the configuration of the

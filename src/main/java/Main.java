@@ -2,9 +2,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import dht_node.DistributedHashTable;
-import dht_node.Logger;
-import dht_node.NodeInfo;
-import dht_node.Sha256;
+import util.Logger;
+import util.NodeInfo;
+import util.Sha256;
 
 /**
  * The entry of the program responsible for parsing arguments

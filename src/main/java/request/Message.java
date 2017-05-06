@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.net.InetAddress;
 
 /**
- * The messge {@link CommunictionHandler} will pass around
+ * The messge {@link CommunicationHandler} will pass around
  * 
  * @author fredzqm
  *

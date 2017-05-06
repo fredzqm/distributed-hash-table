@@ -1,25 +1,21 @@
 package dht_node;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
-import request.CommunictionHandler;
-import request.Message;
+import request.CommunicationHandler;
+import util.Logger;
+import util.NodeInfo;
 
 public class DistributedHashTable {
-	private static final int REQUEST_PARSER_PORT = 4444;
 
 	// private Set<String> addresses;
 	// private Map<String, String> map;
-
-	private CommunictionHandler requestParser;
-
 	private NodeInfo myself, left, right;
 
 	private DistributedHashTable() {
 		// this.addresses = new HashSet<>();
 		// this.map = new HashMap<>();
-		this.requestParser = new CommunictionHandler(REQUEST_PARSER_PORT);
+		CommunicationHandler.getInstance().start();
 	}
 
 	public NodeInfo getLeft() {
@@ -61,29 +57,13 @@ public class DistributedHashTable {
 	}
 
 	/**
-	 * Send a message via {@link CommunictionHandler}
-	 * 
-	 * @param message
-	 *            message
-	 * @param address
-	 *            the {@link InetAddress} address to send to
-	 */
-	public void sentMessage(Message message, InetAddress address) {
-		this.requestParser.sendMessage(message, address);
-	}
-
-	public void sentMessage(Message message, NodeInfo node) {
-		sentMessage(message, node.getAddress());
-	}
-
-	/**
 	 * Attempting to join the cluster the entry node is now in
 	 * 
 	 * @param entryNode
 	 */
 	public void joinCluster(InetAddress entryNode) {
 		JoinRequest joinRequest = new JoinRequest();
-		DistributedHashTable.getIntance().sentMessage(joinRequest, entryNode);
+		CommunicationHandler.sendMessage(joinRequest, entryNode);
 	}
 
 	public synchronized void checkNeighbor(boolean reachingRight) {
@@ -92,13 +72,13 @@ public class DistributedHashTable {
 				throw new RuntimeException("[ERROR] right is null");
 			Logger.logInfo("[INFO] Checking right: %s", right);
 			CheckNeighborRequest forRight = new CheckNeighborRequest(true, myself, right);
-			sentMessage(forRight, right.getAddress());
+			CommunicationHandler.sendMessage(forRight, right.getAddress());
 		} else {
 			if (left == null)
 				throw new RuntimeException("[ERROR] left is null");
 			Logger.logInfo("[INFO] Checking left: %s", left);
 			CheckNeighborRequest forLeft = new CheckNeighborRequest(false,myself, left);
-			sentMessage(forLeft, left.getAddress());
+			CommunicationHandler.sendMessage(forLeft, left.getAddress());
 		}
 	}
 

@@ -2,8 +2,12 @@ package dht_node;
 
 import java.net.InetAddress;
 
+import request.CommunicationHandler;
 import request.Message;
 import request.SimpleACKMessage;
+import util.Logger;
+import util.NodeInfo;
+import util.Sha256;
 
 /**
  * The request to join a cluster
@@ -42,8 +46,8 @@ public class JoinRequest extends Message {
 			Sha256 sha = Sha256.middle(myself.getSha(), right.getSha());
 			NodeInfo newNodeInfo = new NodeInfo(address, sha);
 			dht.setRight(newNodeInfo);
-			dht.sentMessage(new UpdateLeftRequest(newNodeInfo), right);
-			dht.sentMessage(new JoinResponse(getRequestID(), myself, newNodeInfo, right), address);
+			CommunicationHandler.sendMessage(new UpdateLeftRequest(newNodeInfo), right.getAddress());
+			CommunicationHandler.sendMessage(new JoinResponse(getRequestID(), myself, newNodeInfo, right), address);
 		} else {
 			// there is only one node in this cluster, just connects both left
 			// and right to me
@@ -51,7 +55,7 @@ public class JoinRequest extends Message {
 			NodeInfo newNodeInfo = new NodeInfo(address, sha);
 			dht.setRight(newNodeInfo);
 			dht.setLeft(newNodeInfo);
-			dht.sentMessage(new JoinResponse(getRequestID(), myself, newNodeInfo, myself), address);
+			CommunicationHandler.sendMessage(new JoinResponse(getRequestID(), myself, newNodeInfo, myself), address);
 		}
 		dht.checkNeighbor();
 	}
@@ -64,7 +68,7 @@ public class JoinRequest extends Message {
 	@Override
 	public void timeOut(InetAddress address) {
 		System.err.println("[ERROR] JoinRequest waiting for join response timed out, resending join request");
-		DistributedHashTable.getIntance().sentMessage(this, address);
+		CommunicationHandler.sendMessage(this, address);
 	}
 
 	public class UpdateLeftRequest extends Message {
@@ -84,7 +88,7 @@ public class JoinRequest extends Message {
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			DistributedHashTable dht = DistributedHashTable.getIntance();
 			dht.setLeft(newLeftNode);
-			dht.sentMessage(new SimpleACKMessage(getRequestID()), address);
+			CommunicationHandler.sendMessage(new SimpleACKMessage(getRequestID()), address);
 			dht.checkNeighbor();
 		}
 
@@ -96,7 +100,7 @@ public class JoinRequest extends Message {
 		@Override
 		public void timeOut(InetAddress address) {
 			System.err.println("[ERROR] UpdateLeftRequest timedout");
-			DistributedHashTable.getIntance().sentMessage(this, address);
+			CommunicationHandler.sendMessage(this, address);
 		}
 
 	}
@@ -137,7 +141,7 @@ public class JoinRequest extends Message {
 			dht.setMySelf(this.you);
 			dht.setLeft(this.left);
 			dht.setRight(this.right);
-			dht.sentMessage(new SimpleACKMessage(getRequestID()), address);
+			CommunicationHandler.sendMessage(new SimpleACKMessage(getRequestID()), address);
 			dht.checkNeighbor();
 		}
 
@@ -149,7 +153,7 @@ public class JoinRequest extends Message {
 		@Override
 		public void timeOut(InetAddress address) {
 			System.err.println("[ERROR] JoinResponse timed out");
-			DistributedHashTable.getIntance().sentMessage(this, address);
+			CommunicationHandler.sendMessage(this, address);
 		}
 
 		@Override
