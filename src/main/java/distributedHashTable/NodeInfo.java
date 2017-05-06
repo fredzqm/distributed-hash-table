@@ -15,7 +15,7 @@ public class NodeInfo implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	private final InetAddress address;
 	private final Sha256 sha;
 
@@ -57,5 +57,10 @@ public class NodeInfo implements Serializable {
 	@Override
 	public int hashCode() {
 		return this.getHostAddress().hashCode() * 127 + this.sha.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return String.format("{IP: %s, Sha: %s}", this.getHostAddress(), this.getSha().toString().substring(0, 5));
 	}
 }
