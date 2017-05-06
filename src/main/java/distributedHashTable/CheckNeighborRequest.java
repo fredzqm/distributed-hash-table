@@ -114,8 +114,9 @@ public class CheckNeighborRequest extends Message {
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			CheckNeighborRequest checkAliveMessage = (CheckNeighborRequest) acknowleged;
-			Logger.logProgress("%s  is properly wired with %s", getSideStr(checkAliveMessage.reachingRight),
-					address.getHostAddress());
+			DistributedHashTable dht = DistributedHashTable.getIntance();
+			Logger.logProgress("I am %s, my %s is properly wired with %s", dht.getMyself(),
+					getSideStr(checkAliveMessage.reachingRight), dht.getSide(checkAliveMessage.reachingRight));
 		}
 
 	}

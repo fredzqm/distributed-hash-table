@@ -42,7 +42,7 @@ public class JoinRequest extends Message {
 			Sha256 sha = Sha256.middle(myself.getSha(), right.getSha());
 			NodeInfo newNodeInfo = new NodeInfo(address, sha);
 			dht.setRight(newNodeInfo);
-			dht.sentMessage(new UpdateLeftRequest(newNodeInfo), dht.getRight());
+			dht.sentMessage(new UpdateLeftRequest(newNodeInfo), right);
 			dht.sentMessage(new JoinResponse(getRequestID(), myself, newNodeInfo, right), address);
 		} else {
 			// there is only one node in this cluster, just connects both left
