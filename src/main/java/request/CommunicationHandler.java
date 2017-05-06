@@ -2,6 +2,7 @@ package request;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
@@ -95,6 +96,22 @@ public class CommunicationHandler implements IDatagramPacketListener, Runnable {
 	 */
 	public static void sendMessage(Message message, InetAddress address) {
 		getInstance()._sendMessage(message, address);
+	}
+
+	/**
+	 * Same as {@link CommunicationHandler#sendMessage(Message, InetAddress)}
+	 * excepts it takes an IP and convert it into {@link InetAddress}
+	 * 
+	 * @param message
+	 * @param IP
+	 */
+	public static void sendMessage(Message message, String IP) {
+		try {
+			sendMessage(message, InetAddress.getByName(IP));
+		} catch (UnknownHostException e) {
+			Logger.logError("IP %s was not found when sending messages", IP);
+			e.printStackTrace();
+		}
 	}
 
 	private void _sendMessage(Message message, InetAddress address) {
