@@ -83,7 +83,7 @@ public class CheckNeighborRequest extends Message {
 		return isRight ? "right" : "left";
 	}
 
-	public class CheckAliveNAK extends AbstractACKMessage {
+	public static class CheckAliveNAK extends AbstractACKMessage {
 		/**
 		 * 
 		 */
@@ -104,7 +104,7 @@ public class CheckNeighborRequest extends Message {
 
 	}
 
-	public class CheckAliveACK extends AbstractACKMessage {
+	public static class CheckAliveACK extends AbstractACKMessage {
 		/**
 		 * 
 		 */

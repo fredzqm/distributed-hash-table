@@ -71,7 +71,7 @@ public class JoinRequest extends Message {
 		CommunicationHandler.sendMessage(this, address);
 	}
 
-	public class UpdateLeftRequest extends Message {
+	public static class UpdateLeftRequest extends Message {
 		/**
 		 * 
 		 */
