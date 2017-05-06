@@ -1,6 +1,7 @@
 package distributedHashTable;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import request.CommunictionHandler;
 import request.Message;
@@ -13,9 +14,7 @@ public class DistributedHashTable {
 
 	private CommunictionHandler requestParser;
 
-	private NodeInfo left;
-	private NodeInfo right;
-	private Sha256 sha;
+	private NodeInfo myself, left, right;
 
 	private DistributedHashTable() {
 		// this.addresses = new HashSet<>();
@@ -42,11 +41,18 @@ public class DistributedHashTable {
 	}
 
 	public Sha256 getSha() {
-		return sha;
+		return myself.getSha();
 	}
 
-	public void setSha(Sha256 sha) {
-		this.sha = sha;
+	public void setMySha(Sha256 sha) {
+		if (this.myself != null)
+			throw new RuntimeException("You cannot redefine my sha " + sha);
+		Logger.logInfo("set myself to be %s", sha);
+		try {
+			this.myself = new NodeInfo(InetAddress.getLocalHost(), sha);
+		} catch (UnknownHostException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -85,18 +91,18 @@ public class DistributedHashTable {
 			if (right == null)
 				throw new RuntimeException("[ERROR] right is null");
 			Logger.logInfo("[INFO] Checking right: %s", right);
-			CheckNeighborRequest forRight = new CheckNeighborRequest(true);
+			CheckNeighborRequest forRight = new CheckNeighborRequest(true, right.getSha());
 			sentMessage(forRight, right.getAddress());
 		} else {
 			if (left == null)
 				throw new RuntimeException("[ERROR] left is null");
 			Logger.logInfo("[INFO] Checking left: %s", left);
-			CheckNeighborRequest forLeft = new CheckNeighborRequest(false);
+			CheckNeighborRequest forLeft = new CheckNeighborRequest(false, left.getSha());
 			sentMessage(forLeft, left.getAddress());
 		}
 	}
 
-	public synchronized void checkNeighbor() {
+	public void checkNeighbor() {
 		checkNeighbor(true);
 		checkNeighbor(false);
 	}

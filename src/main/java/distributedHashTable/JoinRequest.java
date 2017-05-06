@@ -35,8 +35,8 @@ public class JoinRequest extends Message {
 		Sha256 shaThis = dht.getSha();
 		if (right != null) {
 			// there is already more than two nodes in the cluster, ask the
-			// right to update its left
 			Sha256 shaRight = right.getSha();
+			// right to update its left
 			Sha256 sha = Sha256.middle(shaThis, shaRight);
 			dht.sentMessage(new UpdateLeftRequest(address.getHostAddress(), sha), dht.getRight().getAddress());
 			dht.sentMessage(new JoinResponse(getRequestID(), null, dht.getRight(), sha), address);
@@ -142,6 +142,7 @@ public class JoinRequest extends Message {
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			DistributedHashTable dht = DistributedHashTable.getIntance();
+			dht.setMySha(yourSha);
 			if (this.yourRightIP != null)
 				dht.setRight(new NodeInfo(this.yourRightIP, this.yourRightSha));
 			else

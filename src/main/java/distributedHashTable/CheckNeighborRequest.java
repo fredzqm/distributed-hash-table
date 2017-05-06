@@ -1,6 +1,7 @@
 package distributedHashTable;
 
 import java.net.InetAddress;
+import java.util.Objects;
 
 import request.AbstractACKMessage;
 import request.Message;
@@ -23,19 +24,25 @@ public class CheckNeighborRequest extends Message {
 	/**
 	 * creates a checkAliveMessage
 	 */
-	public CheckNeighborRequest(boolean isRight) {
+	public CheckNeighborRequest(boolean isRight, Sha256 storedSha) {
 		super(0);
 		this.reachingRight = isRight;
-		this.storedSha = DistributedHashTable.getIntance().getSide(isRight).getSha();
+		this.storedSha = storedSha;
 	}
 
 	@Override
 	public void handleRequest(InetAddress address, Message acknowleged) {
 		DistributedHashTable dht = DistributedHashTable.getIntance();
+		String side = getSideStr(!this.reachingRight);
 		NodeInfo correspondSide = dht.getSide(!this.reachingRight);
-		if (correspondSide == null || !address.getHostAddress().equals(correspondSide.getHostAddress())) {
+		if (correspondSide == null) {
+			Logger.logInfo("%s address mismatch now %s but should %s", side, "null", correspondSide.getHostAddress());
+		} else if (!address.getHostAddress().equals(correspondSide.getHostAddress())) {
+			Logger.logInfo("%s address mismatch now %s but should %s", side, address.getHostAddress(),
+					correspondSide.getHostAddress());
 			dht.sentMessage(new CheckAliveNAK(this.getRequestID()), address);
-		} else if (!this.storedSha.equals(dht.getSha())) {
+		} else if (!Objects.equals(this.storedSha, dht.getSha())) {
+			Logger.logInfo("%s sha mismatch now %s but should %s", side, dht.getSha(), this.storedSha);
 			dht.sentMessage(new CheckAliveNAK(this.getRequestID()), address);
 		} else {
 			dht.sentMessage(new CheckAliveACK(this.getRequestID()), address);
