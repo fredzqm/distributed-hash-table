@@ -70,7 +70,7 @@ public class CommunicationHandler implements IDatagramPacketListener, Runnable {
 	public void onRecieved(DatagramPacket packet) {
 		InetAddress addr = packet.getAddress();
 		Message request = UDPServer.deSerializeObject(packet.getData(), Message.class);
-		Logger.logInfo("recieving message %s from %s", request, packet.getAddress().getHostAddress());
+		Logger.logInfo("recv %s from %s", request, packet.getAddress().getHostAddress());
 		Message acknowledged = null;
 		if (request.getACKID() != 0) {
 			acknowledged = ackWaiting.remove(request.getACKID());
@@ -118,7 +118,7 @@ public class CommunicationHandler implements IDatagramPacketListener, Runnable {
 		if (message.requireACK()) {
 			addToACKQueue(message, address);
 		}
-		Logger.logInfo("send message %s to %s", message, address.getHostAddress());
+		Logger.logInfo("send %s  to  %s", message, address.getHostAddress());
 		UDPServer.sendObject(message, address, PORT);
 	}
 

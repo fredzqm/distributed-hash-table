@@ -85,7 +85,10 @@ public abstract class Message implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("ID:%d, ack:%d, class:%s", this.requstID, this.ackForID,
-				this.getClass().getSimpleName());
+		if (this.requstID == 0)
+			return String.format("%s->%d", this.getClass().getSimpleName(), this.ackForID);
+		if (this.ackForID == 0)
+			return String.format("%s[%d]", this.getClass().getSimpleName(), this.requstID);
+		return String.format("%s[%d]->%d", this.getClass().getSimpleName(), this.requstID, this.ackForID);
 	}
 }
