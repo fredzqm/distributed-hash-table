@@ -40,19 +40,22 @@ public class DistributedHashTable {
 		this.right = right;
 	}
 
-	public Sha256 getSha() {
-		return myself.getSha();
+	public NodeInfo getMyself() {
+		return myself;
 	}
 
 	public void setMySha(Sha256 sha) {
-		if (this.myself != null)
-			throw new RuntimeException("You cannot redefine my sha " + sha);
-		Logger.logInfo("set myself to be %s", sha);
 		try {
-			this.myself = new NodeInfo(InetAddress.getLocalHost(), sha);
+			setMySelf(new NodeInfo(InetAddress.getLocalHost(), sha));
 		} catch (UnknownHostException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public void setMySelf(NodeInfo you) {
+		if (this.myself != null)
+			throw new RuntimeException("You cannot redefine myself " + you);
+		Logger.logInfo("set myself to be %s", you);
 	}
 
 	/**
@@ -76,6 +79,10 @@ public class DistributedHashTable {
 		this.requestParser.sendMessage(message, address);
 	}
 
+	public void sentMessage(Message message, NodeInfo node) {
+		sentMessage(message, node.getAddress());
+	}
+
 	/**
 	 * Attempting to join the cluster the entry node is now in
 	 * 
@@ -91,13 +98,13 @@ public class DistributedHashTable {
 			if (right == null)
 				throw new RuntimeException("[ERROR] right is null");
 			Logger.logInfo("[INFO] Checking right: %s", right);
-			CheckNeighborRequest forRight = new CheckNeighborRequest(true, right.getSha());
+			CheckNeighborRequest forRight = new CheckNeighborRequest(true, myself, right);
 			sentMessage(forRight, right.getAddress());
 		} else {
 			if (left == null)
 				throw new RuntimeException("[ERROR] left is null");
 			Logger.logInfo("[INFO] Checking left: %s", left);
-			CheckNeighborRequest forLeft = new CheckNeighborRequest(false, left.getSha());
+			CheckNeighborRequest forLeft = new CheckNeighborRequest(false,myself, left);
 			sentMessage(forLeft, left.getAddress());
 		}
 	}

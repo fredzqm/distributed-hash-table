@@ -38,4 +38,18 @@ public class NodeInfo {
 	public String getHostAddress() {
 		return address.getHostAddress();
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof NodeInfo) {
+			NodeInfo o = (NodeInfo) obj;
+			return this.getHostAddress().equals(o.getHostAddress()) && this.sha.equals(o.sha);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.getHostAddress().hashCode() * 127 + this.sha.hashCode();
+	}
 }

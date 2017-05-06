@@ -1,7 +1,6 @@
 package distributedHashTable;
 
 import java.net.InetAddress;
-import java.util.Objects;
 
 import request.AbstractACKMessage;
 import request.Message;
@@ -18,34 +17,46 @@ public class CheckNeighborRequest extends Message {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private boolean reachingRight;
-	private Sha256 storedSha;
+	private final boolean reachingRight;
+	private final NodeInfo me, you;
 
 	/**
 	 * creates a checkAliveMessage
+	 * 
+	 * @param right
 	 */
-	public CheckNeighborRequest(boolean isRight, Sha256 storedSha) {
+	public CheckNeighborRequest(boolean isRight, NodeInfo me, NodeInfo you) {
 		super(0);
 		this.reachingRight = isRight;
-		this.storedSha = storedSha;
+		this.me = me;
+		this.you = you;
 	}
 
 	@Override
 	public void handleRequest(InetAddress address, Message acknowleged) {
 		DistributedHashTable dht = DistributedHashTable.getIntance();
-		String side = getSideStr(!this.reachingRight);
-		NodeInfo correspondSide = dht.getSide(!this.reachingRight);
-		if (correspondSide == null) {
-			Logger.logInfo("%s address mismatch now %s but should %s", side, "null", correspondSide.getHostAddress());
-		} else if (!address.getHostAddress().equals(correspondSide.getHostAddress())) {
-			Logger.logInfo("%s address mismatch now %s but should %s", side, address.getHostAddress(),
-					correspondSide.getHostAddress());
-			dht.sentMessage(new CheckAliveNAK(this.getRequestID()), address);
-		} else if (!Objects.equals(this.storedSha, dht.getSha())) {
-			Logger.logInfo("%s sha mismatch now %s but should %s", side, dht.getSha(), this.storedSha);
-			dht.sentMessage(new CheckAliveNAK(this.getRequestID()), address);
+		NodeInfo self = dht.getMyself();
+		if (self == null) {
+			dht.sentMessage(new CheckAliveNAK(this.getRequestID(), Logger.logInfo("This node is not yet initialized")),
+					address);
+		} else if (!self.equals(this.you)) {
+			dht.sentMessage(new CheckAliveNAK(this.getRequestID(),
+					Logger.logInfo("This node is %s, but recognized as %s", self, this.you)), address);
 		} else {
-			dht.sentMessage(new CheckAliveACK(this.getRequestID()), address);
+			String side = getSideStr(!this.reachingRight);
+			NodeInfo correspondSide = dht.getSide(!this.reachingRight);
+			if (correspondSide == null) {
+				dht.sentMessage(
+						new CheckAliveNAK(this.getRequestID(), Logger.logInfo("%s is not yet initialized", side)),
+						address);
+			} else if (!correspondSide.equals(this.me)) {
+				dht.sentMessage(
+						new CheckAliveNAK(this.getRequestID(),
+								Logger.logInfo("Thought %s is %s, %s is actually %s", side, correspondSide, this.me)),
+						address);
+			} else {
+				dht.sentMessage(new CheckAliveACK(this.getRequestID()), address);
+			}
 		}
 	}
 
@@ -74,15 +85,17 @@ public class CheckNeighborRequest extends Message {
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
+		private final String message;
 
-		public CheckAliveNAK(int ackForID) {
+		public CheckAliveNAK(int ackForID, String message) {
 			super(ackForID);
+			this.message = message;
 		}
 
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			CheckNeighborRequest checkAliveMessage = (CheckNeighborRequest) acknowleged;
-			Logger.logInfo("%s is not properly wired", getSideStr(checkAliveMessage.reachingRight));
+			Logger.logInfo("%s is not properly wired -- %s", getSideStr(checkAliveMessage.reachingRight), message);
 			DistributedHashTable.getIntance().checkNeighbor(checkAliveMessage.reachingRight);
 		}
 
