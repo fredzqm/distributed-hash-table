@@ -1,7 +1,6 @@
 package distributedHashTable;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import request.CommunictionHandler;
 import request.Message;
@@ -44,18 +43,11 @@ public class DistributedHashTable {
 		return myself;
 	}
 
-	public void setMySha(Sha256 sha) {
-		try {
-			setMySelf(new NodeInfo(InetAddress.getLocalHost(), sha));
-		} catch (UnknownHostException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public void setMySelf(NodeInfo you) {
+	public void setMySelf(NodeInfo myself) {
 		if (this.myself != null)
-			throw new RuntimeException("You cannot redefine myself " + you);
-		Logger.logInfo("set myself to be %s", you);
+			throw new RuntimeException("You cannot redefine myself " + myself);
+		Logger.logInfo("set myself to be %s", myself);
+		this.myself = myself;
 	}
 
 	/**

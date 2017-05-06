@@ -37,7 +37,7 @@ public class CheckNeighborRequest extends Message {
 		DistributedHashTable dht = DistributedHashTable.getIntance();
 		NodeInfo self = dht.getMyself();
 		if (self == null) {
-			dht.sentMessage(new CheckAliveNAK(this.getRequestID(), Logger.logInfo("This node is not yet initialized")),
+			dht.sentMessage(new CheckAliveNAK(this.getRequestID(), Logger.logError("This node is not yet initialized")),
 					address);
 		} else if (!self.equals(this.you)) {
 			dht.sentMessage(new CheckAliveNAK(this.getRequestID(),

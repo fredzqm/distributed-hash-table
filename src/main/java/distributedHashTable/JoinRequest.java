@@ -33,7 +33,10 @@ public class JoinRequest extends Message {
 		// insert it. Right now just insert at the right side
 		NodeInfo right = dht.getRight();
 		NodeInfo myself = dht.getMyself();
-		if (right != null) {
+		if (myself == null) {
+			Logger.logError("I am not initialized yet, please try again later after timed out");
+			return;
+		} else if (right != null) {
 			// there is already more than two nodes in the cluster, ask the
 			// right to update its left
 			Sha256 sha = Sha256.middle(myself.getSha(), right.getSha());

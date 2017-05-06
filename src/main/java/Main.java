@@ -4,6 +4,7 @@ import java.net.UnknownHostException;
 
 import distributedHashTable.DistributedHashTable;
 import distributedHashTable.Logger;
+import distributedHashTable.NodeInfo;
 import distributedHashTable.Sha256;
 
 public class Main {
@@ -18,7 +19,7 @@ public class Main {
 		} else {
 			Logger.logProgress(
 					"No argument passed in, skip attempting to join another host, initializing a random sha");
-			dht.setMySha(new Sha256("" + Math.random()));
+			dht.setMySelf(new NodeInfo(InetAddress.getLocalHost(), new Sha256("" + Math.random())));
 		}
 		while (true)
 			;

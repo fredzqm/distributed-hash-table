@@ -1,5 +1,6 @@
 package distributedHashTable;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -9,7 +10,12 @@ import java.net.UnknownHostException;
  * @author fredzqm
  *
  */
-public class NodeInfo {
+public class NodeInfo implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private final InetAddress address;
 	private final Sha256 sha;
 
