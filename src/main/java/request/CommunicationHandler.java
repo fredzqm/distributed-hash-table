@@ -4,11 +4,10 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import networkUtility.IDatagramPacketListener;
+import networkUtility.Timer;
 import networkUtility.UDPServer;
 import util.Logger;
 
@@ -22,7 +21,7 @@ import util.Logger;
  * @author fredzqm
  *
  */
-public class CommunicationHandler implements IDatagramPacketListener, Runnable {
+public class CommunicationHandler implements IDatagramPacketListener {
 	public static final int REQUEST_PARSER_PORT = 4444;
 
 	private static CommunicationHandler instance;
@@ -31,7 +30,6 @@ public class CommunicationHandler implements IDatagramPacketListener, Runnable {
 	private UDPServer server;
 	private Map<Integer, Message> ackWaiting;
 	private int lastTime;
-	private PriorityQueue<UnACKeDMessage> unACKedMessages;
 
 	/**
 	 * constructs a communication handler at
@@ -41,7 +39,6 @@ public class CommunicationHandler implements IDatagramPacketListener, Runnable {
 	private CommunicationHandler() {
 		this.PORT = REQUEST_PARSER_PORT;
 		this.ackWaiting = new ConcurrentHashMap<>();
-		this.unACKedMessages = new PriorityQueue<>();
 		this.lastTime = 1;
 		this.server = new UDPServer(PORT, this);
 	}
@@ -51,7 +48,6 @@ public class CommunicationHandler implements IDatagramPacketListener, Runnable {
 	 */
 	public void start() {
 		this.server.start();
-		new Thread(this).start();
 	}
 
 	public static CommunicationHandler getInstance() {
@@ -123,79 +119,18 @@ public class CommunicationHandler implements IDatagramPacketListener, Runnable {
 		UDPServer.sendObject(message, address, PORT);
 	}
 
-	private synchronized void addToACKQueue(Message message, InetAddress address) {
+	private void addToACKQueue(Message message, InetAddress address) {
 		lastTime++;
 		if (lastTime == 0)
 			lastTime = 1;
-		message.setRequestID(lastTime);
-		this.ackWaiting.put(lastTime, message);
-		this.unACKedMessages.add(new UnACKeDMessage(message, address));
-		this.notifyAll();
-	}
-
-	@Override
-	public synchronized void run() {
-		while (true) {
-			while (this.unACKedMessages.isEmpty()) {
-				try {
-					this.wait();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+		final int requestID = lastTime;
+		message.setRequestID(requestID);
+		this.ackWaiting.put(requestID, message);
+		Timer.setTimeOut(message.getTimeOut(), () -> {
+			if (ackWaiting.containsKey(requestID)) {
+				message.timeOut(address);
 			}
-			long left = this.unACKedMessages.peek().getTime() - System.currentTimeMillis();
-			if (left > 0) {
-				try {
-					this.wait(left);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-			while (!this.unACKedMessages.isEmpty()) {
-				UnACKeDMessage next = this.unACKedMessages.peek();
-				if (!next.checkTimeOut(this.ackWaiting.keySet()))
-					break;
-				this.unACKedMessages.poll();
-			}
-		}
-	}
-
-	private static class UnACKeDMessage implements Comparable<UnACKeDMessage> {
-		private Message message;
-		private long time;
-		private InetAddress address;
-
-		public UnACKeDMessage(Message message, InetAddress address) {
-			this.message = message;
-			this.address = address;
-			this.time = System.currentTimeMillis() + message.getTimeOut();
-		}
-
-		/**
-		 * 
-		 * @param ackWaiting
-		 * @return true if this message's time is up and processed and should be
-		 *         removed from the queue, false if the time is not up yet
-		 */
-		public boolean checkTimeOut(Set<Integer> ackWaiting) {
-			if (this.time < System.currentTimeMillis()) {
-				if (ackWaiting.contains(this.message.getRequestID())) {
-					this.message.timeOut(address);
-				}
-				return true;
-			}
-			return false;
-		}
-
-		public long getTime() {
-			return time;
-		}
-
-		@Override
-		public int compareTo(UnACKeDMessage o) {
-			return (int) (time - o.time);
-		}
-
+		});
 	}
 
 }

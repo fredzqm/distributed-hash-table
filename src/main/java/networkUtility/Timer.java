@@ -1,17 +1,18 @@
-package request;
+package networkUtility;
 
 import java.util.PriorityQueue;
 
 public class Timer implements Runnable {
 	private static Timer instance;
-	private PriorityQueue<TimeOutEvent> unACKedMessages;
+	private PriorityQueue<TimeOutEvent> unACKedMessages = new PriorityQueue<>();
 
 	public static void setTimeOut(long time, Runnable callback) {
 		Timer.getInstance()._setTimeOut(time, callback);
 	}
 	
-	private void _setTimeOut(long time, Runnable callback) {
+	private synchronized void _setTimeOut(long time, Runnable callback) {
 		unACKedMessages.add(new TimeOutEvent(time, callback));
+		notifyAll();
 	}
 
 	@Override
