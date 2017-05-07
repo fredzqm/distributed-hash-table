@@ -1,22 +1,57 @@
 package dht_node;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Scanner;
 
 import request.CommunicationHandler;
+import request.Message;
 import util.Logger;
 import util.NodeInfo;
+import util.Sha256;
 
 public class DistributedHashTable {
 
 	private Map<String, String> map;
 	private NodeInfo myself, left, right;
-	public static String DIR_LOCATION = "/usr/var/dshared";
+	public static String TABLE_LOCATION = "/usr/var/dshared/table.txt";
+	public final String SHARED_LOCALTION = "/usr/var/dshared";
 
 	private DistributedHashTable() {
-		// this.addresses = new HashSet<>();
-		// this.map = new HashMap<>();
+		this.loadTable();
 		CommunicationHandler.getInstance().start();
+	}
+
+	private void loadTable() {
+		map = new HashMap<String, String>();
+		Properties properties = new Properties();
+		File table = new File(SHARED_LOCALTION + TABLE_LOCATION);
+		try {
+			table.createNewFile();
+			FileInputStream in = new FileInputStream(table);
+			properties.load(in);
+			for (String key : properties.stringPropertyNames()) {
+				map.put(key, properties.get(key).toString());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void writeTable() throws IOException {
+		Properties properties = new Properties();
+		properties.putAll(map);
+		File table = new File(SHARED_LOCALTION + TABLE_LOCATION);
+		table.createNewFile();
+		FileOutputStream out = new FileOutputStream(table);
+		properties.store(out, null);
 	}
 
 	public NodeInfo getLeft() {
@@ -78,7 +113,7 @@ public class DistributedHashTable {
 			if (left == null)
 				throw new RuntimeException("[ERROR] left is null");
 			Logger.logInfo("[INFO] Checking left: %s", left);
-			CheckNeighborRequest forLeft = new CheckNeighborRequest(false,myself, left);
+			CheckNeighborRequest forLeft = new CheckNeighborRequest(false, myself, left);
 			CommunicationHandler.sendMessage(forLeft, left.getAddress());
 		}
 	}
@@ -93,13 +128,32 @@ public class DistributedHashTable {
 		return String.format("Left: %s, Right: %s", left, right);
 	}
 
-	// public String get(String fileName) {
-	// if (map.containsKey(fileName)) {
-	// return map.get(fileName);
-	// }
-	// return null;
-	// }
-	//
+	public String get(Message request, String key, InetAddress ip) {
+		// TODO: Instead of using compare, could use binary search
+		if (map.containsKey(key)) {
+			// TODO: Check if file corrupted or removed in disk
+			String path = map.get(key);
+			File f = new File(path);
+			Logger.logInfo("[GET] Receive request of file: %s from ip: %s", path, ip.getHostName());
+			FileFoundRespond respond = new FileFoundRespond(f);
+			CommunicationHandler.sendMessage(respond, ip);
+			return "File found";
+		} else {
+			if (ip.equals(this.right.getAddress())) {
+				CommunicationHandler.sendMessage(new FileNotExistRespond(), ip);
+				Logger.logInfo("[GET] File does not exsit, end search");
+				return "No such a file!";
+			}
+			CommunicationHandler.sendMessage(request, ip);
+			return "Request passed to the right";
+		}
+	}
+
+	public void put(File f) {
+//		Sha256 sha = Sha256.middle(myself.getSha(), myself.getSha());
+		// return null;
+	}
+
 	// public String put(String fileName, String content) {
 	// if (map.containsKey(fileName)) {
 	// return "File already exists!";
@@ -111,7 +165,7 @@ public class DistributedHashTable {
 	// public String remove(String fileName) {
 	// return map.remove(fileName);
 	// }
-	//
+
 	private static DistributedHashTable table;
 
 	public static DistributedHashTable getIntance() {
@@ -124,5 +178,5 @@ public class DistributedHashTable {
 		}
 		return table;
 	}
-	
+
 }
