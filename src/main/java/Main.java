@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -55,7 +56,14 @@ public class Main {
 			String[] sp = input.split("\\s+");
 			switch (sp[0]) {
 			case "get":
-				client.get(sp[1]);
+				client.get(sp[1], (inputStream) -> {
+					if (inputStream != null)
+						try {
+							Logger.copyLarge(inputStream, System.out);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+				});
 				break;
 			// case "set":
 			// break;

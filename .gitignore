@@ -33,3 +33,6 @@ proguard/
 .gradle/
 build/
 bin/
+
+#testing data store volume
+data/
