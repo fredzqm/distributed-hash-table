@@ -4,15 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.management.RuntimeErrorException;
-
 import request.CommunicationHandler;
-import request.Message;
 import util.Logger;
 import util.NodeInfo;
 
@@ -22,12 +20,11 @@ public class DistributedHashTable {
 
 	private Map<String, String> map;
 	private NodeInfo myself, left, right;
+	private DataTransfer dataTransfer;
 
 	private DistributedHashTable() {
-		this.loadTable();
-		map.put("Test", "Testval");
-		this.writeTable();
 		CommunicationHandler.getInstance().start();
+		dataTransfer = new DataTransfer(this);
 	}
 
 	private void loadTable() {
@@ -133,31 +130,31 @@ public class DistributedHashTable {
 		return String.format("Left: %s, Right: %s", left, right);
 	}
 
-	public String get(Message request, String key, InetAddress ip) {
-		// TODO: Instead of using compare, could use binary search
-		if (map.containsKey(key)) {
-			// TODO: Check if file corrupted or removed in disk
-			String path = map.get(key);
-			File f = new File(path);
-			Logger.logInfo("[GET] Receive request of file: %s from ip: %s", path, ip.getHostName());
-			FileFoundRespond respond = new FileFoundRespond(f);
-			CommunicationHandler.sendMessage(respond, ip);
-			return "File found";
-		} else {
-			if (ip.equals(this.right.getAddress())) {
-				CommunicationHandler.sendMessage(new FileNotExistRespond(), ip);
-				Logger.logInfo("[GET] File does not exsit, end search");
-				return "No such a file!";
-			}
-			CommunicationHandler.sendMessage(request, ip);
-			return "Request passed to the right";
-		}
-	}
+//	public String get(Message request, String key, InetAddress ip) {
+//		// TODO: Instead of using compare, could use binary search
+//		if (map.containsKey(key)) {
+//			// TODO: Check if file corrupted or removed in disk
+//			String path = map.get(key);
+//			File f = new File(path);
+//			Logger.logInfo("[GET] Receive request of file: %s from ip: %s", path, ip.getHostName());
+//			FileFoundRespond respond = new FileFoundRespond(f);
+//			CommunicationHandler.sendMessage(respond, ip);
+//			return "File found";
+//		} else {
+//			if (ip.equals(this.right.getAddress())) {
+//				CommunicationHandler.sendMessage(new FileNotExistRespond(), ip);
+//				Logger.logInfo("[GET] File does not exsit, end search");
+//				return "No such a file!";
+//			}
+//			CommunicationHandler.sendMessage(request, ip);
+//			return "Request passed to the right";
+//		}
+//	}
 
-	public void put(File f) {
-		// Sha256 sha = Sha256.middle(myself.getSha(), myself.getSha());
-		// return null;
-	}
+//	public void put(File f) {
+//		// Sha256 sha = Sha256.middle(myself.getSha(), myself.getSha());
+//		// return null;
+//	}
 
 	// public String put(String fileName, String content) {
 	// if (map.containsKey(fileName)) {
