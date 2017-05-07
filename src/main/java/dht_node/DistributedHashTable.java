@@ -2,37 +2,38 @@ package dht_node;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Scanner;
+
+import javax.management.RuntimeErrorException;
 
 import request.CommunicationHandler;
 import request.Message;
 import util.Logger;
 import util.NodeInfo;
-import util.Sha256;
 
 public class DistributedHashTable {
+	public static final String DATA_LOCALTION = "data";
+	public static final String TABLE_LOCATION = DATA_LOCALTION + "/meta.properties";
 
 	private Map<String, String> map;
 	private NodeInfo myself, left, right;
-	public static String TABLE_LOCATION = "/usr/var/dshared/table.txt";
-	public final String SHARED_LOCALTION = "/usr/var/dshared";
 
 	private DistributedHashTable() {
 		this.loadTable();
+		map.put("Test", "Testval");
+		this.writeTable();
 		CommunicationHandler.getInstance().start();
 	}
 
 	private void loadTable() {
 		map = new HashMap<String, String>();
 		Properties properties = new Properties();
-		File table = new File(SHARED_LOCALTION + TABLE_LOCATION);
+		File table = new File(TABLE_LOCATION);
 		try {
 			table.createNewFile();
 			FileInputStream in = new FileInputStream(table);
@@ -41,17 +42,21 @@ public class DistributedHashTable {
 				map.put(key, properties.get(key).toString());
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 
-	public void writeTable() throws IOException {
+	public void writeTable() {
 		Properties properties = new Properties();
 		properties.putAll(map);
-		File table = new File(SHARED_LOCALTION + TABLE_LOCATION);
-		table.createNewFile();
-		FileOutputStream out = new FileOutputStream(table);
-		properties.store(out, null);
+		File table = new File(TABLE_LOCATION);
+		try {
+			table.createNewFile();
+			FileOutputStream out = new FileOutputStream(table);
+			properties.store(out, null);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public NodeInfo getLeft() {
@@ -150,7 +155,7 @@ public class DistributedHashTable {
 	}
 
 	public void put(File f) {
-//		Sha256 sha = Sha256.middle(myself.getSha(), myself.getSha());
+		// Sha256 sha = Sha256.middle(myself.getSha(), myself.getSha());
 		// return null;
 	}
 
