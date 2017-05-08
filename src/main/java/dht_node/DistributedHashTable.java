@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,8 +14,8 @@ import util.Logger;
 import util.NodeInfo;
 
 public class DistributedHashTable {
-	public static final String DATA_LOCALTION = "data";
-	public static final String TABLE_LOCATION = DATA_LOCALTION + "/meta.properties";
+	public static final String DATA_LOCALTION = "data/";
+	public static final String TABLE_LOCATION = DATA_LOCALTION + "meta.properties";
 
 	private Map<String, String> map;
 	private NodeInfo myself, left, right;

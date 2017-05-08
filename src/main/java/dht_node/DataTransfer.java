@@ -3,14 +3,13 @@ package dht_node;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
-import dht_client.Client;
-import dht_client.Client.Request;
 import networkUtility.ITCPConnectionListener;
 import networkUtility.TCPServer;
+import util.Lib;
 import util.Logger;
 
 public class DataTransfer implements ITCPConnectionListener {
@@ -28,24 +27,26 @@ public class DataTransfer implements ITCPConnectionListener {
 	public void handleConnection(Socket conection) {
 		try {
 			Logger.logInfo("Connection started with %s", conection.getInetAddress());
-			ObjectInputStream input = new ObjectInputStream(new LogInputStream(conection.getInputStream()));
-			ObjectOutputStream output = new ObjectOutputStream(new LogOuputStream(conection.getOutputStream()));
-			Request request = (Request) input.readObject();
-			File file = new File(request.getKey());
-			if (file.exists()) {
+			InputStream input = conection.getInputStream();
+			OutputStream output = conection.getOutputStream();
+			String path = Lib.readStr(input);
+			Logger.logInfo("Looking for file %s", path);
+			File file = new File(DistributedHashTable.DATA_LOCALTION + path);
+			if (!file.exists()) {
 				Logger.logInfo("File %s is not found", file.toPath());
-				output.writeObject(new Client.GetResponse(false));
+				Lib.writeLong(0, output);
 			} else {
 				Logger.logInfo("File %s found, start transfering data", file.toPath());
-				output.writeObject(new Client.GetResponse(true));
-				Logger.copyLarge(new FileInputStream(file), output);
+				long fileSize = file.length();
+				Lib.writeLong(fileSize, output);
+				Lib.copyLarge(new FileInputStream(file), output);
 			}
-			Logger.logInfo("Connection closed with %s", conection.getInetAddress());
 			input.close();
 			output.close();
 			conection.close();
-		} catch (IOException | ClassNotFoundException e1) {
-			e1.printStackTrace();
+			Logger.logInfo("Connection closed with %s", conection.getInetAddress());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 

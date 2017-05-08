@@ -1,9 +1,5 @@
 package util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 /**
  * This should be an singleton class the managers the configuration of the
  * project
@@ -56,14 +52,4 @@ public class Logger {
 		return String.format("[" + head + "] " + format, args);
 	}
 
-	public static long copyLarge(final InputStream input, final OutputStream output) throws IOException {
-		long count = 0;
-		final byte[] buffer = new byte[1024 * 4];
-		int n;
-		while (-1 != (n = input.read(buffer))) {
-			output.write(buffer, 0, n);
-			count += n;
-		}
-		return count;
-	}
 }

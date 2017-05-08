@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 import dht_client.Client;
 import dht_node.DistributedHashTable;
+import util.Lib;
 import util.Logger;
 import util.NodeInfo;
 import util.Sha256;
@@ -59,7 +60,7 @@ public class Main {
 				client.get(sp[1], (inputStream) -> {
 					if (inputStream != null)
 						try {
-							Logger.copyLarge(inputStream, System.out);
+							Lib.copyLarge(inputStream, System.out);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
