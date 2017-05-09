@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import dht_client.DataTransfer;
 import request.CommunicationHandler;
 import util.Logger;
 import util.NodeInfo;

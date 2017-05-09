@@ -64,10 +64,20 @@ public class Main {
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
+					System.out.println();
 				});
 				break;
-			// case "set":
-			// break;
+			case "put":
+				client.put(sp[1], (outputStream)->{
+					if (outputStream != null) {
+						try {
+							outputStream.write(sp[2].getBytes());
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				});
+				break;
 			default:
 				Logger.logError("Not recognized command: %s", sp[0]);
 				break;
