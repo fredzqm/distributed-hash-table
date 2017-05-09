@@ -7,7 +7,8 @@ TYPE=$1
 NAME=$2
 CONNECTS_TO=$3
 
+
 IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONNECTS_TO)
 echo "Attempt to join: <"$IP">"
 echo "Start running:"
-docker run -it --name $NAME fredzqm/dht $TYPE $IP
+docker run -it -v "$PWD"/data/$NAME:/app/data --name $NAME fredzqm/dht $TYPE $IP

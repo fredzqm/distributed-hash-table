@@ -1,4 +1,6 @@
 package networkUtility;
+
+import java.io.IOException;
 import java.net.Socket;
 
 /**
@@ -9,6 +11,12 @@ import java.net.Socket;
  */
 public interface ITCPConnectionListener {
 
-	void handleConnection(Socket client);
+	/**
+	 * consume the connection
+	 * 
+	 * @param connection
+	 * @throws IOException 
+	 */
+	void handleConnection(Socket connection) throws IOException;
 
 }

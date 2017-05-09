@@ -24,12 +24,14 @@ public class Search extends Message {
 	private transient String path;
 	private transient List<String> ipList;
 	private transient int cur;
+	private transient Callback callback;
 	private boolean firstStop;
 
-	public Search(String path, List<String> ips) {
+	public Search(String path, List<String> ips, Callback callback) {
 		super(0);
 		this.path = path;
 		this.sha = new Sha256(path);
+		this.callback = callback;
 		try {
 			this.clientAddress = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
@@ -90,8 +92,28 @@ public class Search extends Message {
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			Search findRequest = (Search) acknowleged;
 			Logger.logProgress("The source of %s is being found at %s", findRequest.path, address.getHostAddress());
+			new Thread(() -> {
+				if (!findRequest.callback.onFoundNode(address))
+					findRequest.send();
+			}).start();
 		}
 
+	}
+
+	/**
+	 * 
+	 * @author fredzqm
+	 *
+	 */
+	interface Callback {
+		/**
+		 * 
+		 * @param address
+		 *            the address of the node found that might has this file
+		 * @return {@code true} if this connection is successfully consumed,
+		 *         otherwise reattempt to find the node
+		 */
+		boolean onFoundNode(InetAddress address);
 	}
 
 }

@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -5,6 +6,7 @@ import java.util.Scanner;
 
 import dht_client.Client;
 import dht_node.DistributedHashTable;
+import util.Lib;
 import util.Logger;
 import util.NodeInfo;
 import util.Sha256;
@@ -55,10 +57,43 @@ public class Main {
 			String[] sp = input.split("\\s+");
 			switch (sp[0]) {
 			case "get":
-				client.get(sp[1]);
+				client.get(sp[1], (inputStream) -> {
+					if (inputStream != null)
+						try {
+							Lib.copyLarge(inputStream, System.out);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					System.out.println();
+				});
 				break;
-			// case "set":
-			// break;
+			case "put":
+				client.put(sp[1], (outputStream) -> {
+					if (outputStream != null) {
+						try {
+							outputStream.write(sp[2].getBytes());
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				});
+				break;
+			case "contains":
+				client.contains(sp[1], (has) -> {
+					if (has)
+						System.out.println("File exists");
+					else
+						System.out.println("File does not exist");
+				});
+				break;
+			case "delete":
+				client.delete(sp[1], (has) -> {
+					if (has)
+						System.out.println("File exists");
+					else
+						System.out.println("File does not exist");
+				});		
+				break;
 			default:
 				Logger.logError("Not recognized command: %s", sp[0]);
 				break;

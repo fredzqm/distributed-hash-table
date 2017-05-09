@@ -51,7 +51,11 @@ public class TCPServer implements Runnable {
 			try {
 				Socket client = socket.accept();
 				new Thread(() -> {
-					listener.handleConnection(client);
+					try {
+						listener.handleConnection(client);
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
 				}).start();
 			} catch (IOException e) {
 				e.printStackTrace();
