@@ -1,5 +1,5 @@
 {
-  "name": "distributed hash table",
+  "name": "distrubted-hash-table",
   "version": "0.0.1",
   "description": "The frontend for our distributed hash table",
   "scripts": {
