@@ -1,0 +1,23 @@
+dist: trusty
+sudo: required
+language: node_js
+node_js:
+  - "7"
+os:
+  - linux
+env:
+  global:
+    - DBUS_SESSION_BUS_ADDRESS=/dev/null
+    - DISPLAY=:99.0
+    - CHROME_BIN=/usr/bin/google-chrome
+before_script:
+   - sh -e /etc/init.d/xvfb start
+   - sudo apt-get update
+   - sudo apt-get install -y libappindicator1 fonts-liberation
+   - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+   - sudo dpkg -i google-chrome*.deb
+install:
+  - yarn install
+script:
+  - yarn run lint
+  - yarn run test
