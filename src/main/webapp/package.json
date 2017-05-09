@@ -1,0 +1,21 @@
+{
+  "name": "spring-react-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./site/bundle.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "react": "latest"
+  },
+  "devDependencies": {
+    "babel-loader": "latest",
+    "webpack": "latest"
+  },
+  "scripts": {
+    "webpack": "node node_modules/webpack/bin/webpack -w"
+  }
+}
