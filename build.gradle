@@ -5,24 +5,34 @@
  * For more details take a look at the Java Libraries chapter in the Gradle
  * user guide available at https://docs.gradle.org/3.5/userguide/java_library_plugin.html
  */
-
 buildscript {
     repositories {
         mavenCentral()
         jcenter()
-    	maven { url "http://repo.spring.io/snapshot" }
-    	maven { url "http://repo.spring.io/milestone" }
+        maven { url "http://repo.spring.io/snapshot" }
+        maven { url "http://repo.spring.io/milestone" }
+        maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.2.RELEASE")
+        classpath "com.moowork.gradle:gradle-node-plugin:1.1.1"
     }
 }
+
+
+plugins {
+  id "com.moowork.node" version "1.1.1"
+}
+
+
 // Apply the java-library plugin to add support for Java Library
 apply plugin: 'java-library'
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
+apply plugin: 'com.moowork.node'
+
 
 // In this section you declare where to find the dependencies of your project
 repositories {
@@ -77,16 +87,16 @@ dependencies {
 }
 
 
-task npmInstall(type:Exec) {
+task npmInstall2(type:Exec) {
     workingDir 'src/main/webapp'
     commandLine 'npm', 'install'
 }
 
-task webpack(type:Exec, dependsOn:npmInstall) {
+task webpack(type:Exec, dependsOn:npmInstall2) {
     workingDir 'src/main/webapp'
     commandLine 'npm', 'run', 'webpack'
 }
 
 tasks.idea {
-    dependsOn = [cleanIdeaModule, ideaModule, npmInstall]
+    dependsOn = [cleanIdeaModule, ideaModule, npmInstall2]
 }

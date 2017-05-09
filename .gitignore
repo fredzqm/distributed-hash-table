@@ -36,3 +36,8 @@ bin/
 
 #testing data store volume
 data/
+src/main/webapp/node_modules/
+src/main/resources/templates/main.js
+*.map
+
+node_modules
