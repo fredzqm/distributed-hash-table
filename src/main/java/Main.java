@@ -85,6 +85,15 @@ public class Main {
 					else
 						System.out.println("File does not exist");
 				});
+				break;
+			case "delete":
+				client.delete(sp[1], (has) -> {
+					if (has)
+						System.out.println("File exists");
+					else
+						System.out.println("File does not exist");
+				});		
+				break;
 			default:
 				Logger.logError("Not recognized command: %s", sp[0]);
 				break;

@@ -129,10 +129,10 @@ public class Client {
 				long response = Lib.readLong(input);
 				if (response != 0) {
 					Logger.logProgress("The file %s is already exists %d bytes long", key, response);
-					callback.onHasFile(false);
+					callback.onHasFile(true);
 				} else {
 					Logger.logProgress("The file %s does not exists", key);
-					callback.onHasFile(true);
+					callback.onHasFile(false);
 				}
 				Logger.logInfo("Connection closed with node %s", address);
 			} catch (IOException e) {
@@ -176,10 +176,10 @@ public class Client {
 				long response = Lib.readLong(input);
 				if (response != 0) {
 					Logger.logProgress("The file %s is already exists %d bytes long", key, response);
-					callback.onHasFile(false);
+					callback.onHasFile(true);
 				} else {
 					Logger.logProgress("The file %s does not exists", key);
-					callback.onHasFile(true);
+					callback.onHasFile(false);
 				}
 				Logger.logInfo("Connection closed with node %s", address);
 			} catch (IOException e) {
