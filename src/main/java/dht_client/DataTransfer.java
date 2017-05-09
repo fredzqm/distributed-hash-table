@@ -48,6 +48,9 @@ public class DataTransfer implements ITCPConnectionListener {
 			case CONTAINS:
 				contains(input, output);
 				break;
+			case DELETE:
+				delete(input, output);
+				break;
 			default:
 				throw new RuntimeException("Unrecognized operation type " + operation);
 			}
@@ -104,6 +107,20 @@ public class DataTransfer implements ITCPConnectionListener {
 		} else {
 			Lib.writeLong(file.length(), output);
 			Logger.logProgress("File %s are ready exists put operation failed", file.toPath());
+		}
+	}
+	
+	private void delete(InputStream input, OutputStream output) throws IOException, FileNotFoundException {
+		String key = Lib.readStr(input);
+		Logger.logInfo("key is %s", key);
+		File file = new File(getFileNameFromKey(key));
+		if (!file.exists()) {
+			Lib.writeLong(0, output);
+			Logger.logProgress("File %s does not exist", file.toPath());
+		} else {
+			Lib.writeLong(file.length(), output);
+			Logger.logProgress("File %s are ready exists put operation failed", file.toPath());
+			file.delete();
 		}
 	}
 
