@@ -9,6 +9,9 @@
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
+    	maven { url "http://repo.spring.io/snapshot" }
+    	maven { url "http://repo.spring.io/milestone" }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.2.RELEASE")
@@ -21,12 +24,13 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 
-
 // In this section you declare where to find the dependencies of your project
 repositories {
     // Use jcenter for resolving your dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+    maven { url "http://repo.spring.io/snapshot" }
+    maven { url "http://repo.spring.io/milestone" }
 }
 
 //create a single Jar with all dependencies
@@ -72,3 +76,17 @@ dependencies {
     testCompile("junit:junit")
 }
 
+
+task npmInstall(type:Exec) {
+    workingDir 'src/main/webapp'
+    commandLine 'npm', 'install'
+}
+
+task webpack(type:Exec, dependsOn:npmInstall) {
+    workingDir 'src/main/webapp'
+    commandLine 'npm', 'run', 'webpack'
+}
+
+tasks.idea {
+    dependsOn = [cleanIdeaModule, ideaModule, npmInstall]
+}
