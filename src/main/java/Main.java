@@ -68,7 +68,7 @@ public class Main {
 				});
 				break;
 			case "put":
-				client.put(sp[1], (outputStream)->{
+				client.put(sp[1], (outputStream) -> {
 					if (outputStream != null) {
 						try {
 							outputStream.write(sp[2].getBytes());
@@ -78,6 +78,13 @@ public class Main {
 					}
 				});
 				break;
+			case "contains":
+				client.contains(sp[1], (has) -> {
+					if (has)
+						System.out.println("File exists");
+					else
+						System.out.println("File does not exist");
+				});
 			default:
 				Logger.logError("Not recognized command: %s", sp[0]);
 				break;

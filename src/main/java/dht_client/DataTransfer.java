@@ -43,7 +43,10 @@ public class DataTransfer implements ITCPConnectionListener {
 				get(input, output);
 				break;
 			case PUT:
-				set(input, output);
+				put(input, output);
+				break;
+			case CONTAINS:
+				contains(input, output);
 				break;
 			default:
 				throw new RuntimeException("Unrecognized operation type " + operation);
@@ -61,7 +64,7 @@ public class DataTransfer implements ITCPConnectionListener {
 		Logger.logProgress("Get Operation");
 		String key = Lib.readStr(input);
 		Logger.logInfo("Get operation key is %s", key);
-		File file = new File(DistributedHashTable.DATA_LOCALTION + key);
+		File file = new File(getFileNameFromKey(key));
 		if (!file.exists()) {
 			Logger.logProgress("File %s is not found", file.toPath());
 			Lib.writeLong(0, output);
@@ -73,10 +76,10 @@ public class DataTransfer implements ITCPConnectionListener {
 		}
 	}
 
-	private void set(InputStream input, OutputStream output) throws IOException, FileNotFoundException {
+	private void put(InputStream input, OutputStream output) throws IOException, FileNotFoundException {
 		String key = Lib.readStr(input);
 		Logger.logInfo("key is %s", key);
-		File file = new File(DistributedHashTable.DATA_LOCALTION + key);
+		File file = new File(getFileNameFromKey(key));
 		if (!file.exists()) {
 			Logger.logProgress("File %s does not exist", file.toPath());
 			Lib.writeLong(0, output);
@@ -89,5 +92,22 @@ public class DataTransfer implements ITCPConnectionListener {
 			Lib.writeLong(file.length(), output);
 			Logger.logProgress("File %s are ready exists put operation failed", file.toPath());
 		}
+	}
+	
+	private void contains(InputStream input, OutputStream output) throws IOException, FileNotFoundException {
+		String key = Lib.readStr(input);
+		Logger.logInfo("key is %s", key);
+		File file = new File(getFileNameFromKey(key));
+		if (!file.exists()) {
+			Lib.writeLong(0, output);
+			Logger.logProgress("File %s does not exist", file.toPath());
+		} else {
+			Lib.writeLong(file.length(), output);
+			Logger.logProgress("File %s are ready exists put operation failed", file.toPath());
+		}
+	}
+
+	private String getFileNameFromKey(String key) {
+		return DistributedHashTable.DATA_LOCALTION + key;
 	}
 }

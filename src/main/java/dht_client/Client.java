@@ -32,7 +32,6 @@ public class Client {
 				Logger.logInfo("Connection started with node %s", address);
 				InputStream input = socket.getInputStream();
 				OutputStream output = socket.getOutputStream();
-				// sent operation GET
 				output.write(DataTransfer.GET);
 				Lib.writeStr(output, key);
 				long fileLength = Lib.readLong(input);
@@ -79,7 +78,6 @@ public class Client {
 				Logger.logInfo("Connection started with node %s", address);
 				InputStream input = socket.getInputStream();
 				OutputStream output = socket.getOutputStream();
-				// sent operation PUT
 				output.write(DataTransfer.PUT);
 				Lib.writeStr(output, key);
 				long response = Lib.readLong(input);
@@ -116,5 +114,51 @@ public class Client {
 		 *            null if this file already exists
 		 */
 		void onGetOuputStream(OutputStream output);
+	}
+
+	public void contains(String key, ContainCallback callback) {
+		Search findRequest = new Search(key, ips, (address) -> {
+			Socket socket = null;
+			try {
+				socket = new Socket(address, DataTransfer.PORT);
+				Logger.logInfo("Connection started with node %s", address);
+				InputStream input = socket.getInputStream();
+				OutputStream output = socket.getOutputStream();
+				output.write(DataTransfer.CONTAINS);
+				Lib.writeStr(output, key);
+				long response = Lib.readLong(input);
+				if (response != 0) {
+					Logger.logProgress("The file %s is already exists %d bytes long", key, response);
+					callback.onGetOuputStream(false);
+				} else {
+					Logger.logProgress("The file %s does not exists", key);
+					callback.onGetOuputStream(true);
+				}
+				Logger.logInfo("Connection closed with node %s", address);
+			} catch (IOException e) {
+				e.printStackTrace();
+				Logger.logError("TCP connection failed to establish with %s", address.getHostAddress());
+				return false;
+			} finally {
+				if (socket != null)
+					try {
+						socket.close();
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+			}
+			return true;
+		});
+		findRequest.send();
+	}
+
+	public interface ContainCallback {
+		/**
+		 * The input stream constains the data of this file
+		 * 
+		 * @param has
+		 *            true if this file exists in this DHT
+		 */
+		void onGetOuputStream(boolean has);
 	}
 }
