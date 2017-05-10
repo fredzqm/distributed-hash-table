@@ -24,7 +24,7 @@ public class Client {
 		this.ips.add(ip);
 	}
 
-	public void get(String key, GetCallback callback) {
+	public void get(String key, IGetCallback callback) {
 		Search findRequest = new Search(key, ips, (address) -> {
 			Socket socket = null;
 			try {
@@ -60,7 +60,7 @@ public class Client {
 		findRequest.send();
 	}
 
-	public interface GetCallback {
+	public interface IGetCallback {
 		/**
 		 * The input stream constains the data of this file
 		 * 
@@ -70,7 +70,33 @@ public class Client {
 		void onGetInputStream(InputStream input);
 	}
 
-	public void put(String key, PutCallback callback) {
+	/**
+	 * The synchronized version of get
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public InputStream get(String key) {
+		GetCallback callback = new GetCallback();
+		get(key, callback);
+		try {
+			callback.wait();
+		} catch (InterruptedException e) {
+			throw new RuntimeException();
+		}
+		return callback.input;
+	}
+
+	private static class GetCallback implements IGetCallback {
+		public InputStream input;
+
+		public void onGetInputStream(InputStream input) {
+			this.input = input;
+			this.notifyAll();
+		}
+	}
+
+	public void put(String key, IPutCallback callback) {
 		Search findRequest = new Search(key, ips, (address) -> {
 			Socket socket = null;
 			try {
@@ -106,7 +132,7 @@ public class Client {
 		findRequest.send();
 	}
 
-	public interface PutCallback {
+	public interface IPutCallback {
 		/**
 		 * The input stream constains the data of this file
 		 * 
@@ -116,7 +142,33 @@ public class Client {
 		void onGetOuputStream(OutputStream output);
 	}
 
-	public void contains(String key, ContainCallback callback) {
+	/**
+	 * The synchronized version of put
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public OutputStream put(String key) {
+		PutCallback callback = new PutCallback();
+		put(key, callback);
+		try {
+			callback.wait();
+		} catch (InterruptedException e) {
+			throw new RuntimeException();
+		}
+		return callback.output;
+	}
+
+	private static class PutCallback implements IPutCallback {
+		public OutputStream output;
+
+		public void onGetOuputStream(OutputStream output) {
+			this.output = output;
+			this.notifyAll();
+		}
+	}
+
+	public void contains(String key, IContainCallback callback) {
 		Search findRequest = new Search(key, ips, (address) -> {
 			Socket socket = null;
 			try {
@@ -152,7 +204,7 @@ public class Client {
 		findRequest.send();
 	}
 
-	public interface ContainCallback {
+	public interface IContainCallback {
 		/**
 		 * The input stream constains the data of this file
 		 * 
@@ -162,8 +214,35 @@ public class Client {
 		void onHasFile(boolean has);
 
 	}
+
+
+	/**
+	 * The synchronized version of contains
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public boolean contains(String key) {
+		ContainCallback callback = new ContainCallback();
+		contains(key, callback);
+		try {
+			callback.wait();
+		} catch (InterruptedException e) {
+			throw new RuntimeException();
+		}
+		return callback.has;
+	}
+
+	private static class ContainCallback implements IContainCallback {
+		public boolean has;
+
+		public void onHasFile(boolean has) {
+			this.has = has;
+			this.notifyAll();
+		}
+	}
 	
-	public void delete(String key, ContainCallback callback) {
+	public void delete(String key, IContainCallback callback) {
 		Search findRequest = new Search(key, ips, (address) -> {
 			Socket socket = null;
 			try {
@@ -197,5 +276,22 @@ public class Client {
 			return true;
 		});
 		findRequest.send();
+	}
+	
+	/**
+	 * The synchronized version of delete
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public boolean delete(String key) {
+		ContainCallback callback = new ContainCallback();
+		delete(key, callback);
+		try {
+			callback.wait();
+		} catch (InterruptedException e) {
+			throw new RuntimeException();
+		}
+		return callback.has;
 	}
 }
