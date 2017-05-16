@@ -5,15 +5,18 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import dht_client.DataTransfer;
+import dht_client.Search;
 import networkUtility.Timer;
 import request.CommunicationHandler;
 import util.Logger;
 import util.NodeInfo;
+import util.Sha256;
 
 public class DistributedHashTable {
 	public static final String DATA_LOCALTION = "data/";
@@ -130,6 +133,19 @@ public class DistributedHashTable {
 
 	public void brokenConnectionTo(boolean reachingRight) {
 		Logger.logError("Connection with %s is broken", CheckNeighborRequest.getSideStr(reachingRight));
+		if (reachingRight) {
+//			Sha256 justToRight = this.myself.getSha().getJustToRight();
+//			Search search = new Search(justToRight, Arrays.asList(this.getLeft().getHostAddress()), new Search.Callback() {
+//				
+//				@Override
+//				public boolean onFoundNode(InetAddress address) {
+//					return false;
+//				}
+//			});
+//			search.send();
+		} else {
+			
+		}
 	}
 
 	@Override

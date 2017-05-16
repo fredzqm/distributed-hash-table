@@ -106,4 +106,5 @@ public class Sha256 implements Serializable, Comparable<Sha256> {
 	public static boolean inOrder(Sha256 x, Sha256 mid, Sha256 y) {
 		return x.compareTo(mid) * mid.compareTo(y) * x.compareTo(y) <= 0;
 	}
+
 }

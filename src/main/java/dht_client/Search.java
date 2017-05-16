@@ -21,16 +21,14 @@ public class Search extends Message {
 	private Sha256 sha;
 	private InetAddress clientAddress;
 
-	private transient String path;
 	private transient List<String> ipList;
 	private transient int cur;
 	private transient Callback callback;
 	private boolean firstStop;
 
-	public Search(String path, List<String> ips, Callback callback) {
+	public Search(Sha256 sha256, List<String> ips, Callback callback) {
 		super(0);
-		this.path = path;
-		this.sha = new Sha256(path);
+		this.sha = sha256;
 		this.callback = callback;
 		try {
 			this.clientAddress = InetAddress.getLocalHost();
@@ -91,7 +89,7 @@ public class Search extends Message {
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			Search findRequest = (Search) acknowleged;
-			Logger.logProgress("The source of %s is being found at %s", findRequest.path, address.getHostAddress());
+			Logger.logProgress("The source of %s is being found at %s", findRequest.sha, address.getHostAddress());
 			new Thread(() -> {
 				if (!findRequest.callback.onFoundNode(address))
 					findRequest.send();
@@ -105,7 +103,7 @@ public class Search extends Message {
 	 * @author fredzqm
 	 *
 	 */
-	interface Callback {
+	public interface Callback {
 		/**
 		 * 
 		 * @param address

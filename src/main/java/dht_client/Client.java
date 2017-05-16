@@ -10,6 +10,7 @@ import java.util.List;
 import request.CommunicationHandler;
 import util.Lib;
 import util.Logger;
+import util.Sha256;
 
 public class Client {
 
@@ -25,7 +26,7 @@ public class Client {
 	}
 
 	public void get(String key, GetCallback callback) {
-		Search findRequest = new Search(key, ips, (address) -> {
+		Search findRequest = new Search(new Sha256(key), ips, (address) -> {
 			Socket socket = null;
 			try {
 				socket = new Socket(address, DataTransfer.PORT);
@@ -71,7 +72,7 @@ public class Client {
 	}
 
 	public void put(String key, PutCallback callback) {
-		Search findRequest = new Search(key, ips, (address) -> {
+		Search findRequest = new Search(new Sha256(key), ips, (address) -> {
 			Socket socket = null;
 			try {
 				socket = new Socket(address, DataTransfer.PORT);
@@ -117,7 +118,7 @@ public class Client {
 	}
 
 	public void contains(String key, ContainCallback callback) {
-		Search findRequest = new Search(key, ips, (address) -> {
+		Search findRequest = new Search(new Sha256(key), ips, (address) -> {
 			Socket socket = null;
 			try {
 				socket = new Socket(address, DataTransfer.PORT);
@@ -164,7 +165,7 @@ public class Client {
 	}
 	
 	public void delete(String key, ContainCallback callback) {
-		Search findRequest = new Search(key, ips, (address) -> {
+		Search findRequest = new Search(new Sha256(key), ips, (address) -> {
 			Socket socket = null;
 			try {
 				socket = new Socket(address, DataTransfer.PORT);
