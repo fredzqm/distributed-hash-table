@@ -130,44 +130,6 @@ public class DistributedHashTable {
 		return String.format("Left: %s, Right: %s", left, right);
 	}
 
-//	public String get(Message request, String key, InetAddress ip) {
-//		// TODO: Instead of using compare, could use binary search
-//		if (map.containsKey(key)) {
-//			// TODO: Check if file corrupted or removed in disk
-//			String path = map.get(key);
-//			File f = new File(path);
-//			Logger.logInfo("[GET] Receive request of file: %s from ip: %s", path, ip.getHostName());
-//			FileFoundRespond respond = new FileFoundRespond(f);
-//			CommunicationHandler.sendMessage(respond, ip);
-//			return "File found";
-//		} else {
-//			if (ip.equals(this.right.getAddress())) {
-//				CommunicationHandler.sendMessage(new FileNotExistRespond(), ip);
-//				Logger.logInfo("[GET] File does not exsit, end search");
-//				return "No such a file!";
-//			}
-//			CommunicationHandler.sendMessage(request, ip);
-//			return "Request passed to the right";
-//		}
-//	}
-
-//	public void put(File f) {
-//		// Sha256 sha = Sha256.middle(myself.getSha(), myself.getSha());
-//		// return null;
-//	}
-
-	// public String put(String fileName, String content) {
-	// if (map.containsKey(fileName)) {
-	// return "File already exists!";
-	// }
-	// map.put(fileName, content);
-	// return "File successfully added!";
-	// }
-	//
-	// public String remove(String fileName) {
-	// return map.remove(fileName);
-	// }
-
 	private static DistributedHashTable table;
 
 	public static DistributedHashTable getIntance() {
