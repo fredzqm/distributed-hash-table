@@ -119,7 +119,7 @@ public class CheckNeighborRequest extends Message {
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			CheckNeighborRequest checkAliveMessage = (CheckNeighborRequest) acknowleged;
 			DistributedHashTable dht = DistributedHashTable.getIntance();
-			Logger.logProgress("I am %s, my %s is wired with %s", dht.getMyself(),
+			Logger.logProgress("I am %s, my %s is %s", dht.getMyself(),
 					getSideStr(checkAliveMessage.reachingRight), dht.getSide(checkAliveMessage.reachingRight));
 		}
 

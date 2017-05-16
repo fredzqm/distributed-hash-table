@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import dht_client.DataTransfer;
+import networkUtility.Timer;
 import request.CommunicationHandler;
 import util.Logger;
 import util.NodeInfo;
@@ -25,6 +26,7 @@ public class DistributedHashTable {
 	private DistributedHashTable() {
 		CommunicationHandler.getInstance().start();
 		dataTransfer = new DataTransfer(this);
+		checkNeighbor();
 	}
 
 	private void loadTable() {
@@ -107,22 +109,31 @@ public class DistributedHashTable {
 	public synchronized void checkNeighbor(boolean reachingRight) {
 		if (reachingRight) {
 			if (right == null)
-				throw new RuntimeException("[ERROR] right is null");
-			Logger.logInfo("[INFO] Checking right: %s", right);
-			CheckNeighborRequest forRight = new CheckNeighborRequest(true, myself, right);
-			CommunicationHandler.sendMessage(forRight, right.getAddress());
+				Logger.logProgress("right is null");
+			else {
+				Logger.logInfo("Checking right: %s", right);
+				CheckNeighborRequest forRight = new CheckNeighborRequest(true, myself, right);
+				CommunicationHandler.sendMessage(forRight, right.getAddress());
+			}
 		} else {
-			if (left == null)
-				throw new RuntimeException("[ERROR] left is null");
-			Logger.logInfo("[INFO] Checking left: %s", left);
-			CheckNeighborRequest forLeft = new CheckNeighborRequest(false, myself, left);
-			CommunicationHandler.sendMessage(forLeft, left.getAddress());
+			if (left == null) {
+				Logger.logProgress("left is null");
+			} else {
+				Logger.logInfo("Checking left: %s", left);
+				CheckNeighborRequest forLeft = new CheckNeighborRequest(false, myself, left);
+				CommunicationHandler.sendMessage(forLeft, left.getAddress());
+			}
 		}
 	}
 
-	public void checkNeighbor() {
-		checkNeighbor(true);
-		checkNeighbor(false);
+	private void checkNeighbor() {
+		Logger.logInfo("Set check neighbor timeout");
+		Timer.setTimeOut(2000, () -> {
+			Logger.logInfo("Called check neighbor timeout");
+			checkNeighbor(false);
+			checkNeighbor(true);
+			checkNeighbor();
+		});
 	}
 
 	@Override

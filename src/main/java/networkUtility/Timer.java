@@ -79,6 +79,7 @@ public class Timer implements Runnable {
 			synchronized (Timer.class) {
 				if (instance == null) {
 					instance = new Timer();
+					new Thread(instance).start();
 				}
 			}
 		}

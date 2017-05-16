@@ -57,7 +57,6 @@ public class JoinRequest extends Message {
 			dht.setLeft(newNodeInfo);
 			CommunicationHandler.sendMessage(new JoinResponse(getRequestID(), myself, newNodeInfo, myself), address);
 		}
-		dht.checkNeighbor();
 	}
 
 	@Override
@@ -89,7 +88,6 @@ public class JoinRequest extends Message {
 			DistributedHashTable dht = DistributedHashTable.getIntance();
 			dht.setLeft(newLeftNode);
 			CommunicationHandler.sendMessage(new ACK(getRequestID()), address);
-			dht.checkNeighbor();
 		}
 
 		@Override
@@ -142,7 +140,6 @@ public class JoinRequest extends Message {
 			dht.setLeft(this.left);
 			dht.setRight(this.right);
 			CommunicationHandler.sendMessage(new ACK(getRequestID()), address);
-			dht.checkNeighbor();
 		}
 
 		@Override

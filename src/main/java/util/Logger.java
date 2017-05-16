@@ -44,7 +44,7 @@ public class Logger {
 	 */
 	public static String logInfo(String format, Object... args) {
 		String mes = getString("INFO", format, args);
-		System.err.println(mes);
+//		System.err.println(mes);
 		return mes;
 	}
 
