@@ -22,6 +22,7 @@ public class CheckNeighborRequest extends Message {
 
 	private final boolean reachingRight;
 	private final NodeInfo me, you;
+	private transient int attempts = 0;
 
 	/**
 	 * creates a checkAliveMessage
@@ -71,8 +72,12 @@ public class CheckNeighborRequest extends Message {
 
 	@Override
 	public void timeOut(InetAddress address) {
-		System.err.println("[ERROR] " + getSideStr(reachingRight) + " is not responding");
-		CommunicationHandler.sendMessage(this, address);
+		Logger.logError("%s is not responding, attempt %d", getSideStr(reachingRight), attempts);
+		attempts++;
+		if (attempts > 4)
+			DistributedHashTable.getIntance().brokenConnectionTo(reachingRight);
+		else
+			CommunicationHandler.sendMessage(this, address);
 	}
 
 	@Override
@@ -99,8 +104,7 @@ public class CheckNeighborRequest extends Message {
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			CheckNeighborRequest checkAliveMessage = (CheckNeighborRequest) acknowleged;
-			Logger.logInfo("%s is not properly wired -- %s", getSideStr(checkAliveMessage.reachingRight), message);
-			DistributedHashTable.getIntance().checkNeighbor(checkAliveMessage.reachingRight);
+			Logger.logError("%s is not properly wired -- %s", getSideStr(checkAliveMessage.reachingRight), message);
 		}
 
 	}
@@ -119,8 +123,8 @@ public class CheckNeighborRequest extends Message {
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			CheckNeighborRequest checkAliveMessage = (CheckNeighborRequest) acknowleged;
 			DistributedHashTable dht = DistributedHashTable.getIntance();
-			Logger.logProgress("I am %s, my %s is %s", dht.getMyself(),
-					getSideStr(checkAliveMessage.reachingRight), dht.getSide(checkAliveMessage.reachingRight));
+			Logger.logProgress("I am %s, my %s is %s", dht.getMyself(), getSideStr(checkAliveMessage.reachingRight),
+					dht.getSide(checkAliveMessage.reachingRight));
 		}
 
 	}

@@ -106,7 +106,7 @@ public class DistributedHashTable {
 		CommunicationHandler.sendMessage(joinRequest, entryNode);
 	}
 
-	public synchronized void checkNeighbor(boolean reachingRight) {
+	private synchronized void checkNeighbor(boolean reachingRight) {
 		if (reachingRight) {
 			if (right == null)
 				Logger.logProgress("right is null");
@@ -134,6 +134,10 @@ public class DistributedHashTable {
 			checkNeighbor(true);
 			checkNeighbor();
 		});
+	}
+
+	public void brokenConnectionTo(boolean reachingRight) {
+		Logger.logError("Connection with %s is broken", CheckNeighborRequest.getSideStr(reachingRight));
 	}
 
 	@Override
