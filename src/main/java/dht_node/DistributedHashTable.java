@@ -106,8 +106,10 @@ public class DistributedHashTable {
 		CommunicationHandler.sendMessage(joinRequest, entryNode);
 	}
 
-	private synchronized void checkNeighbor(boolean reachingRight) {
-		if (reachingRight) {
+	private void checkNeighbor() {
+		Logger.logInfo("Set check neighbor timeout");
+		Timer.setTimeOut(2000, () -> {
+			Logger.logInfo("Called check neighbor timeout");
 			if (right == null)
 				Logger.logProgress("right is null");
 			else {
@@ -115,7 +117,6 @@ public class DistributedHashTable {
 				CheckNeighborRequest forRight = new CheckNeighborRequest(true, myself, right);
 				CommunicationHandler.sendMessage(forRight, right.getAddress());
 			}
-		} else {
 			if (left == null) {
 				Logger.logProgress("left is null");
 			} else {
@@ -123,15 +124,6 @@ public class DistributedHashTable {
 				CheckNeighborRequest forLeft = new CheckNeighborRequest(false, myself, left);
 				CommunicationHandler.sendMessage(forLeft, left.getAddress());
 			}
-		}
-	}
-
-	private void checkNeighbor() {
-		Logger.logInfo("Set check neighbor timeout");
-		Timer.setTimeOut(2000, () -> {
-			Logger.logInfo("Called check neighbor timeout");
-			checkNeighbor(false);
-			checkNeighbor(true);
 			checkNeighbor();
 		});
 	}
