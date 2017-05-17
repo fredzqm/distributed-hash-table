@@ -32,18 +32,17 @@ public class JoinRequest extends Message {
 	@Override
 	public void handleRequest(InetAddress address, Message acknowleged) {
 		DistributedHashTable dht = DistributedHashTable.getIntance();
-		// TODO: in the future actually figure out a proper position to
-		// insert it. Right now just insert at the right side
 		NodeInfo right = dht.getRight();
 		NodeInfo myself = dht.getMyself();
 		if (myself == null) {
 			Logger.logError("I am not initialized yet, please try again later after timed out");
 			return;
 		} else {
-			Sha256 sha = Sha256.middle(myself.getSha(), myself.getSha());
+			Sha256 sha = Sha256.middle(myself.getSha(), (right != null ? right : myself).getSha());
 			NodeInfo newNodeInfo = new NodeInfo(address, sha);
 			dht.setRight(newNodeInfo);
-			CommunicationHandler.sendMessage(new JoinResponse(getRequestID(), newNodeInfo, right != null? right: myself), address);
+			CommunicationHandler.sendMessage(
+					new JoinResponse(getRequestID(), newNodeInfo, right != null ? right : myself), address);
 		}
 	}
 
