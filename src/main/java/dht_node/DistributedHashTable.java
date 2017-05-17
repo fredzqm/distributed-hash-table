@@ -18,7 +18,6 @@ public class DistributedHashTable {
 	private DistributedHashTable() {
 		CommunicationHandler.getInstance().start();
 		dataTransfer = new DataTransfer(this);
-		CircularMessage.checkCircle();
 	}
 
 	public boolean isActive() {
@@ -66,6 +65,7 @@ public class DistributedHashTable {
 	public void joinCluster(InetAddress entryNode) {
 		JoinRequest joinRequest = new JoinRequest();
 		CommunicationHandler.sendMessage(joinRequest, entryNode);
+		CircularMessage.checkCircle();
 	}
 
 	public void brokenConnectionTo(boolean reachingRight) {

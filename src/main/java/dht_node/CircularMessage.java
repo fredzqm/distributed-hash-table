@@ -4,6 +4,7 @@ import java.net.InetAddress;
 
 import networkUtility.Timer;
 import request.AbstractACKMessage;
+import request.CommunicationHandler;
 import request.Message;
 import util.Logger;
 import util.NodeInfo;
@@ -17,6 +18,8 @@ public class CircularMessage extends AbstractACKMessage {
 	private static NodeInfo left;
 	private static long timeOutThreshold = 1000;
 	private static long lastTimeCheck = System.currentTimeMillis();
+	private static long lastCount;
+	private static long numOfNode;
 
 	private NodeInfo yourLeft;
 	private long count;
@@ -29,15 +32,17 @@ public class CircularMessage extends AbstractACKMessage {
 
 	@Override
 	public void handleRequest(InetAddress address, Message acknowleged) {
-		DistributedHashTable dht = DistributedHashTable.getIntance();
 		CircularMessage.left = this.yourLeft;
-		this.lastTimeCheck = System.currentTimeMillis();
-		count++;
+		CircularMessage.numOfNode = this.count - CircularMessage.lastCount;
+		CircularMessage.lastCount = this.count;
+		CircularMessage.lastTimeCheck = System.currentTimeMillis();
+		this.count++;
+		this.yourLeft = DistributedHashTable.getIntance().getMyself();
 		send();
 	}
 
 	public void send() {
-
+		CommunicationHandler.sendMessage(this, DistributedHashTable.getIntance().getRight().getAddress());
 	}
 
 	public static boolean isActive() {
@@ -50,13 +55,20 @@ public class CircularMessage extends AbstractACKMessage {
 
 	public static void checkCircle() {
 		Timer.setTimeOut(timeOutThreshold, () -> {
-			NodeInfo myself = DistributedHashTable.getIntance().getMyself();
-			if (myself == null) {
-				Logger.logError("Has not defined myself yet");
+			if (isActive()) {
+				Logger.logProgress("I am active, checked %d ago, left is %s, %d node",
+						System.currentTimeMillis() - lastTimeCheck, left, numOfNode);
 			} else {
-				CircularMessage circular = new CircularMessage(myself);
-				circular.send();
+				Logger.logProgress("I am not active now, sending a circular message");
+				NodeInfo myself = DistributedHashTable.getIntance().getMyself();
+				if (myself == null) {
+					throw new RuntimeException("Has not defined myself yet");
+				} else {
+					CircularMessage circular = new CircularMessage(myself);
+					circular.send();
+				}
 			}
+			checkCircle();
 		});
 	}
 }
