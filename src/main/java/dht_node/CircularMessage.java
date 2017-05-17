@@ -17,7 +17,7 @@ public class CircularMessage extends AbstractACKMessage {
 
 	private static NodeInfo left;
 	private static long timeOutThreshold = 1000;
-	private static long lastTimeCheck = System.currentTimeMillis();
+	private static long lastTimeCheck;
 	private static long lastCount;
 	private static long numOfNode;
 
@@ -35,6 +35,7 @@ public class CircularMessage extends AbstractACKMessage {
 		CircularMessage.left = this.yourLeft;
 		CircularMessage.numOfNode = this.count - CircularMessage.lastCount;
 		CircularMessage.lastCount = this.count;
+//		CircularMessage.timeOutThreshold = 100 * (System.currentTimeMillis() - CircularMessage.lastTimeCheck);
 		CircularMessage.lastTimeCheck = System.currentTimeMillis();
 		this.count++;
 		this.yourLeft = DistributedHashTable.getIntance().getMyself();
@@ -42,7 +43,12 @@ public class CircularMessage extends AbstractACKMessage {
 	}
 
 	public void send() {
-		CommunicationHandler.sendMessage(this, DistributedHashTable.getIntance().getRight().getAddress());
+		NodeInfo right = DistributedHashTable.getIntance().getRight();
+		if (right == null) {
+			Logger.logProgress("Right not initialized yet");
+			return;
+		}
+		CommunicationHandler.sendMessage(this, right.getAddress());
 	}
 
 	public static boolean isActive() {
@@ -71,4 +77,5 @@ public class CircularMessage extends AbstractACKMessage {
 			checkCircle();
 		});
 	}
+
 }
