@@ -12,24 +12,21 @@ public class DistributedHashTable {
 	public static final String DATA_LOCALTION = "data/";
 	public static final String TABLE_LOCATION = DATA_LOCALTION + "meta.properties";
 
-	private NodeInfo myself, left, right;
-	private long timeOutThreshold = 1000;
-	private long lastTimeCheck;
+	private NodeInfo myself, right;
 	private DataTransfer dataTransfer;
 
 	private DistributedHashTable() {
 		CommunicationHandler.getInstance().start();
 		dataTransfer = new DataTransfer(this);
-		checkNeighbor();
+		CircularMessage.checkCircle();
+	}
+
+	public boolean isActive() {
+		return CircularMessage.isActive();
 	}
 
 	public NodeInfo getLeft() {
-		return left;
-	}
-
-	public void setLeft(NodeInfo left) {
-		Logger.logInfo("set left to be %s", left);
-		this.left = left;
+		return CircularMessage.getLeft();
 	}
 
 	public NodeInfo getRight() {
@@ -71,48 +68,28 @@ public class DistributedHashTable {
 		CommunicationHandler.sendMessage(joinRequest, entryNode);
 	}
 
-	private void checkNeighbor() {
-		Logger.logInfo("Set check neighbor timeout");
-		Timer.setTimeOut(2000, () -> {
-			Logger.logInfo("Called check neighbor timeout");
-			if (right == null)
-				Logger.logProgress("right is null");
-			else {
-				Logger.logInfo("Checking right: %s", right);
-				CheckNeighborRequest forRight = new CheckNeighborRequest(true, myself, right);
-				CommunicationHandler.sendMessage(forRight, right.getAddress());
-			}
-			if (left == null) {
-				Logger.logProgress("left is null");
-			} else {
-				Logger.logInfo("Checking left: %s", left);
-				CheckNeighborRequest forLeft = new CheckNeighborRequest(false, myself, left);
-				CommunicationHandler.sendMessage(forLeft, left.getAddress());
-			}
-			checkNeighbor();
-		});
-	}
-
 	public void brokenConnectionTo(boolean reachingRight) {
 		Logger.logError("Connection with %s is broken", CheckNeighborRequest.getSideStr(reachingRight));
 		if (reachingRight) {
-//			Sha256 justToRight = this.myself.getSha().getJustToRight();
-//			Search search = new Search(justToRight, Arrays.asList(this.getLeft().getHostAddress()), new Search.Callback() {
-//				
-//				@Override
-//				public boolean onFoundNode(InetAddress address) {
-//					return false;
-//				}
-//			});
-//			search.send();
+			// Sha256 justToRight = this.myself.getSha().getJustToRight();
+			// Search search = new Search(justToRight,
+			// Arrays.asList(this.getLeft().getHostAddress()), new
+			// Search.Callback() {
+			//
+			// @Override
+			// public boolean onFoundNode(InetAddress address) {
+			// return false;
+			// }
+			// });
+			// search.send();
 		} else {
-			
+
 		}
 	}
 
 	@Override
 	public String toString() {
-		return String.format("Left: %s, Right: %s", left, right);
+		return String.format("Left: %s, Right: %s", getLeft(), getRight());
 	}
 
 	private static DistributedHashTable table;

@@ -54,7 +54,6 @@ public class JoinRequest extends Message {
 			Sha256 sha = Sha256.middle(myself.getSha(), myself.getSha());
 			NodeInfo newNodeInfo = new NodeInfo(address, sha);
 			dht.setRight(newNodeInfo);
-			dht.setLeft(newNodeInfo);
 			CommunicationHandler.sendMessage(new JoinResponse(getRequestID(), myself, newNodeInfo, myself), address);
 		}
 	}
@@ -86,7 +85,6 @@ public class JoinRequest extends Message {
 		@Override
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			DistributedHashTable dht = DistributedHashTable.getIntance();
-			dht.setLeft(newLeftNode);
 			CommunicationHandler.sendMessage(new ACK(getRequestID()), address);
 		}
 
@@ -137,7 +135,6 @@ public class JoinRequest extends Message {
 		public void handleRequest(InetAddress address, Message acknowleged) {
 			DistributedHashTable dht = DistributedHashTable.getIntance();
 			dht.setMySelf(this.you);
-			dht.setLeft(this.left);
 			dht.setRight(this.right);
 			CommunicationHandler.sendMessage(new ACK(getRequestID()), address);
 		}
