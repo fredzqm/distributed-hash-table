@@ -68,7 +68,7 @@ public class DistributedHashTable {
 	}
 
 	public void brokenConnectionTo(boolean reachingRight) {
-		Logger.logError("Connection with %s is broken", CheckNeighborRequest.getSideStr(reachingRight));
+		Logger.logError("Connection with %s is broken", reachingRight);
 		if (reachingRight) {
 			// Sha256 justToRight = this.myself.getSha().getJustToRight();
 			// Search search = new Search(justToRight,

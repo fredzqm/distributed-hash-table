@@ -32,7 +32,6 @@ public class JoinRequest extends Message {
 	@Override
 	public void handleRequest(InetAddress address, Message acknowleged) {
 		DistributedHashTable dht = DistributedHashTable.getIntance();
-
 		// TODO: in the future actually figure out a proper position to
 		// insert it. Right now just insert at the right side
 		NodeInfo right = dht.getRight();
@@ -40,21 +39,11 @@ public class JoinRequest extends Message {
 		if (myself == null) {
 			Logger.logError("I am not initialized yet, please try again later after timed out");
 			return;
-		} else if (right != null) {
-			// there is already more than two nodes in the cluster, ask the
-			// right to update its left
-			Sha256 sha = Sha256.middle(myself.getSha(), right.getSha());
-			NodeInfo newNodeInfo = new NodeInfo(address, sha);
-			dht.setRight(newNodeInfo);
-			CommunicationHandler.sendMessage(new UpdateLeftRequest(newNodeInfo), right.getAddress());
-			CommunicationHandler.sendMessage(new JoinResponse(getRequestID(), myself, newNodeInfo, right), address);
 		} else {
-			// there is only one node in this cluster, just connects both left
-			// and right to me
 			Sha256 sha = Sha256.middle(myself.getSha(), myself.getSha());
 			NodeInfo newNodeInfo = new NodeInfo(address, sha);
 			dht.setRight(newNodeInfo);
-			CommunicationHandler.sendMessage(new JoinResponse(getRequestID(), myself, newNodeInfo, myself), address);
+			CommunicationHandler.sendMessage(new JoinResponse(getRequestID(), newNodeInfo, right != null? right: myself), address);
 		}
 	}
 
@@ -69,38 +58,6 @@ public class JoinRequest extends Message {
 		CommunicationHandler.sendMessage(this, address);
 	}
 
-	public static class UpdateLeftRequest extends Message {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-
-		private final NodeInfo newLeftNode;
-
-		public UpdateLeftRequest(NodeInfo newLeftNode) {
-			super(0);
-			this.newLeftNode = newLeftNode;
-		}
-
-		@Override
-		public void handleRequest(InetAddress address, Message acknowleged) {
-			DistributedHashTable dht = DistributedHashTable.getIntance();
-			CommunicationHandler.sendMessage(new ACK(getRequestID()), address);
-		}
-
-		@Override
-		public long getTimeOut() {
-			return 1000;
-		}
-
-		@Override
-		public void timeOut(InetAddress address) {
-			System.err.println("[ERROR] UpdateLeftRequest timedout");
-			CommunicationHandler.sendMessage(this, address);
-		}
-
-	}
-
 	/**
 	 * The response to {@link JoinRequest}
 	 * 
@@ -113,20 +70,18 @@ public class JoinRequest extends Message {
 		 */
 		private static final long serialVersionUID = 1L;
 
-		private final NodeInfo left, you, right;
+		private final NodeInfo you, right;
 
 		/**
 		 * constructs an JoinRequest givens the requestID of corresponding join
 		 * request
 		 * 
 		 * @param joinRequestID
-		 * @param left
 		 * @param myself
 		 * @param right
 		 */
-		public JoinResponse(int joinRequestID, NodeInfo left, NodeInfo myself, NodeInfo right) {
+		public JoinResponse(int joinRequestID, NodeInfo myself, NodeInfo right) {
 			super(joinRequestID);
-			this.left = left;
 			this.you = myself;
 			this.right = right;
 		}
@@ -152,7 +107,7 @@ public class JoinRequest extends Message {
 
 		@Override
 		public String toString() {
-			return super.toString() + String.format(" | JoinResponse left: %s\tyou: %s\tright: %s\t", left, you, right);
+			return super.toString() + String.format(" | JoinResponse you: %s\tright: %s\t", you, right);
 		}
 	}
 
