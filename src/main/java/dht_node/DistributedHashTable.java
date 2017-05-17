@@ -1,64 +1,26 @@
 package dht_node;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 import dht_client.DataTransfer;
-import dht_client.Search;
 import networkUtility.Timer;
 import request.CommunicationHandler;
 import util.Logger;
 import util.NodeInfo;
-import util.Sha256;
 
 public class DistributedHashTable {
 	public static final String DATA_LOCALTION = "data/";
 	public static final String TABLE_LOCATION = DATA_LOCALTION + "meta.properties";
 
-	private Map<String, String> map;
 	private NodeInfo myself, left, right;
+	private long timeOutThreshold = 1000;
+	private long lastTimeCheck;
 	private DataTransfer dataTransfer;
 
 	private DistributedHashTable() {
 		CommunicationHandler.getInstance().start();
 		dataTransfer = new DataTransfer(this);
 		checkNeighbor();
-	}
-
-	private void loadTable() {
-		map = new HashMap<String, String>();
-		Properties properties = new Properties();
-		File table = new File(TABLE_LOCATION);
-		try {
-			table.createNewFile();
-			FileInputStream in = new FileInputStream(table);
-			properties.load(in);
-			for (String key : properties.stringPropertyNames()) {
-				map.put(key, properties.get(key).toString());
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public void writeTable() {
-		Properties properties = new Properties();
-		properties.putAll(map);
-		File table = new File(TABLE_LOCATION);
-		try {
-			table.createNewFile();
-			FileOutputStream out = new FileOutputStream(table);
-			properties.store(out, null);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	public NodeInfo getLeft() {
